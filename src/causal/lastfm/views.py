@@ -36,7 +36,7 @@ def auth(request):
                             disable_oauth=True)
             
             # check we have a valid username
-            if not user_feed.has_key('error') and user_feed['error'] != 6:
+            if not user_feed.has_key('error'):
                 # Before creating a new one
                 AccessToken.objects.create(
                     service=service,
