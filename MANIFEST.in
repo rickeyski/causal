@@ -1,8 +1,10 @@
 include *.txt
 include LICENSE
+include VERSION
 global-exclude pip-log.txt
 graft src/causal/static
 recursive-include src/causal *.html
 recursive-include src/causal *.xml
 recursive-include src/causal *.json
 recursive-include src/causal *.js
+recursive-include src/causal *.txt
