@@ -1,4 +1,4 @@
-Causal 0.9 readme
+Causal 1.0 readme
 =================
 
 1. Intro
@@ -11,7 +11,7 @@ provide us/causal with permission to access their data using the API supplied by
 
 | WE DO NOT STORE ANY DATA FROM THE THIRD PARTY EXCEPT OAUTH TOKENS
 | We only store the oauth details, causal doesn't store any updates from the third party. Causal does cache
-pages locally, these only survice as long as the server is running. Restarting the server should clear the cache.
+pages locally, these only survive as long as the caching server is running (e.g. memcached.)
 
 It was deliberate choice not to store any data to avoid any potential privacy issues.
 
@@ -71,7 +71,7 @@ Download our development HEAD as a tar::
 
 Or download a stable tagged release as a tar::
 
-  curl -L -C - -O https://github.com/causality/causal/tarball/v0.9
+  curl -L -C - -O https://github.com/causality/causal/tarball/master
   tar xzf causality-causal-*.tar.gz
   mv causality-causal-*/ causal/
 
@@ -84,7 +84,7 @@ To install from the setuputils/distutils installer::
   cd causal
   python setup.py install
 
-This unfortunately doesn't install all the dependencies for the core services, you would need to install these seperately, as listed in ``virtualenv_builds/extras_requirements.txt``.
+This unfortunately doesn't install all the dependencies for the core services, you would need to install these seperately, as listed in ``extras_requirements.txt``.
 
 4.3 easy_install/pip
 ********************
@@ -116,6 +116,9 @@ To build a sandboxed Django environment containing Causal using ``buildout``::
 
 After which you should have a set of endpoints in ``bin/``, e.g.::
 
+  cd src/causal
+  cp local_settings.py.example local_settings.py
+  ## At this point you'll probably want to open local_settings.py and customise the settings ##
   bin/django syncdb
   bin/django migrate
   bin/django createsuperuser
@@ -136,7 +139,7 @@ To quickly bootstrap a virtualenv for development (or even deployment), we recom
   ./bootstrap.py 
   cd ../src/causal
   cp local_settings.py.example local_settings.py
-  # At this point you'll probably want to open local_settings.py and customise the settings
+  ## At this point you'll probably want to open local_settings.py and customise the settings ##
   ./manage.py syncdb
   ./manage.py migrate
   ./manage.py createsuperuser
@@ -145,24 +148,23 @@ To quickly bootstrap a virtualenv for development (or even deployment), we recom
 4.6 Requirements
 ****************
 
- * Django - 1.2.3
- * oauth2 - 1.2.0
- * south - 0.7.1
- * django-registration - 0.7
- * jogging - 0.2.2 
- * django-timezones - 0.1.4
- * python-dateutil - 1.5
+ * Django >= 1.2
+ * oauth2
+ * south >= 0.7
+ * django-registration == 0.7
+ * django-timezones == 0.2.dev2
+ * python-dateutil < 2.0
  * pytz 
 
 The following allow the different services to be interacted with:
 
- * BeautifulSoup - 3.0.8.1  Required to parse data back from github.com
- * feedparser - 4.1  Required for general rss parsing - google.com/reader
- * flickrapi - 1.4.2  Required to talk to flickr.com
- * github2 - 0.1.2  Required to talk to github.com
- * tweepy - 1.7.1  Required to talk to twitter.com
- * twitter-text-py - 1.0.3  Required to parse data back from twitter.com
- * pyfacegraph - 0.0.4  Required for facebook.com
+ * BeautifulSoup - Required to parse data back from github.com
+ * feedparser >= 4.0 - Required for general rss parsing - google.com/reader
+ * flickrapi - Required to talk to flickr.com
+ * github2 - Required to talk to github.com
+ * tweepy - Required to talk to twitter.com
+ * twitter-text-py - Required to parse data back from twitter.com
+ * pyfacegraph - Required for facebook.com
 
 5. Accessing Services
 ---------------------
@@ -186,10 +188,19 @@ The front page contains links to stats about each service.
 5.3 Enabling a service
 **********************
 
-Add the service into INSTALLED_APPS. 
+Add the service into INSTALLED_APPS in your ``local_settings.py``.
 
-Next you need to add an oauth in the backand http://HOSTNAME/_ca-admin. Next you need to create a Service app 
-linking to the oauth object.
+The following services will requirement some API authentication details too:
+
+ * ``causal.twitter`` - OAuth consumer key and consumer secret.
+ * ``causal.facebook`` - OAuth2 consumer key and consumer secret.
+ * ``causal.foursquare`` - OAuth consumer key and consumer secret.
+ * ``causal.flickr`` - API key.
+ * ``causal.lastfm`` - API key.
+
+Please see the API websites for the relevant service to find out how to get this details.
+
+``local_settings.py.example`` has an example of the SERVICE_CONFIG dict that these values should go in.
 
 The service is then ready to roll.
 
