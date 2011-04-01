@@ -35,8 +35,7 @@ def auth(request):
             )
 
             # check we have a valid username
-            if not user_feed.has_key('error') or (
-              user_feed.has_key('error') and user_feed['error'] != 6):
+            if not user_feed.has_key('error'):
                 if not service.auth:
                     auth_handler = Auth()
                 else:
