@@ -37,8 +37,8 @@ setup(
         url='http://www.projectcausal.com/',
         download_url='https://github.com/causality/causal/tarball/%s' % (__version__,),
         keywords=['lifestream', 'aggregator', 'socialnetwork', 'django', 'social'],
-        packages=find_packages(os.path.join(cwd, 'src'), exclude=['ez_setup']),
-        package_dir={'': os.path.join(cwd, 'src')},
+        packages=find_packages('src', exclude=['ez_setup']),
+        package_dir={'': 'src'},
         setup_requires=setup_requires,
         install_requires=['setuptools'],
         extras_require={
