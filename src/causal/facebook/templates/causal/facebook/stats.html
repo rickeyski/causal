@@ -39,14 +39,6 @@
                     <li>{%if status.link_back %} <a href="{{status.link_back}}"> {{status.created|date:"D H:ma"}}</a>{% endif%}
                         {%if status.liked %} Liked {% endif%} - {{status.body}}
                         <a href="{{status.who_else_liked }}">people who liked this</a>
-                        {% if status.other_peoples_comments %}
-                            People who also liked this status:
-                            <ul>
-                            {% for comment in status.other_peoples_comments%} 
-                                <li>{{status.name}} </li> 
-                            {% endfor %}
-                            </ul>
-                        {% endif%}
                     </li>
                 {% endfor %}
             {% else %}
