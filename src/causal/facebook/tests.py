@@ -1,10 +1,10 @@
-"""Test suite for delicious services."""
+"""Test suite for delicious services.
+"""
 
 from bunch import Bunch
 from causal.main.models import UserService
 from causal.facebook.service import ServiceHandler
 from datetime import datetime, timedelta, date
-from django.utils import simplejson
 from django.test import TestCase
 import os, time
 
@@ -14,10 +14,10 @@ except ImportError:
     pass
 
 class TestFacebookService(TestCase):
-    """Test the module with fixtures."""
+    """Test the module with fixtures.
+    """
 
     def setUp(self):
-        self.path = os.path.dirname(os.path.realpath(__file__))
         self.handler = ServiceHandler(model_instance=UserService())
         self.since =  date.today() - timedelta(days=7)
         
@@ -25,7 +25,8 @@ class TestFacebookService(TestCase):
         pass
 
     def test_convert_status_feed(self):
-        """Test we can convert statuses from facebook."""
+        """Test we can convert statuses from facebook.
+        """
          
         test_statuses = []
 
@@ -39,7 +40,8 @@ class TestFacebookService(TestCase):
         self.assertEqual(len(service_items), 5)
 
     def test_convert_link_feed(self):
-        """Test converting a feed from Facebook into ServiceItems"""
+        """Test converting a feed from Facebook into ServiceItems.
+        """
         
         test_links = []
         
