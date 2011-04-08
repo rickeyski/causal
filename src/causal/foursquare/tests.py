@@ -1,12 +1,11 @@
-"""Test class for Four Square app."""
+"""Test class for Four Square app.
+"""
 
-from causal.foursquare.service import _convert_feed
-from causal.foursquare.views import auth
+from causal.foursquare.service import ServiceHandler
 from datetime import datetime
-from django.contrib.auth.models import User
+from causal.main.models import UserService
 from django.core.urlresolvers import reverse
 from django.test import TestCase
-from django.test.client import Client
 from django.utils import simplejson
 import os
 
@@ -16,10 +15,12 @@ except ImportError:
     pass
 
 class TestFoursquareViews(TestCase):
-    """Test the module with fixtures."""
+    """Test the module with fixtures.
+    """
     
     def setUp(self):
         self.path = os.path.dirname(os.path.realpath(__file__))
+        self.handler = ServiceHandler(model_instance=UserService())
         
     def tearDown(self):
         pass
@@ -28,13 +29,13 @@ class TestFoursquareViews(TestCase):
         """Check we do the right thing for converting
         foursquares feed into ours."""
         
-        json_file = open(self.path + '/test_data/user_history.json', 'r')
+        json_file = open(os.path.join(self.path, 'test_data', 'user_history.json'), 'r')
         json_feed = json_file.read()
         json_file.close()
         
         since = datetime.strptime('Tue, 01 Feb 11 06:40:17 +0000'.replace(' +0000', ''), 
                           '%a, %d %b %y %H:%M:%S')
         
-        results = _convert_feed('username', 'foursquare', simplejson.loads(json_feed), since.date())
+        results = self.handler._convert_feed(simplejson.loads(json_feed), since.date())
         
         self.assertEqual(len(results), 3)
