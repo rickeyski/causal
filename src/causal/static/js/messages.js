@@ -1,7 +1,7 @@
 var messages_wrapper = null;
 function add_message(item) {
     var message = $($('#message_template').jqote(item, '*')).hide();
-    $(messages_wrapper, "ul.messages-list-" + item.extra_tags).append(message);
+    $(messages_wrapper).children("ul.messages-list-" + item.extra_tags).append(message);
     if (!messages_wrapper.hasClass(item.extra_tags)) {
         messages_wrapper.addClass(item.extra_tags);
     }
