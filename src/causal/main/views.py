@@ -142,7 +142,7 @@ def _add_image_html(body):
         body = ''.join(
             (
                 body,
-                ' </br> <a href="%s"><img src="http://twitpic.com/show/mini/%s"/></a>' % (
+                ' <br/> <a href="%s"><img src="http://twitpic.com/show/mini/%s"/></a>' % (
                     twitpic_url[0],
                     twitpic_url[0].rsplit('/')[-1])
                 )
@@ -153,7 +153,7 @@ def _add_image_html(body):
         body = ''.join(
             (
                 body,
-                ' </br> <a href="%s.th.jpg"><img src="%s.th.jpg"/></a>' % (
+                ' <br/> <a href="%s"><img src="%s.th.jpg"/></a>' % (
                     yfrog_url[0],
                     yfrog_url[0]
                 )
