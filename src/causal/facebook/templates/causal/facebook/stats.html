@@ -50,11 +50,15 @@
             <ul>
             {% if photos %}
                 {%for photo in photos %}
+                <li>
                 {% if photo.link_back %}<a href="{{status.link_back}}">{{photo.created|date:"D H:ma"}}<img src="{{photo.body}}"/>
                         {%endif%} </a>
+                <ul>
                 {% for comment in photo.comments %}
                     <li>"{{comment.body}}" - {{comment.from_user}}</li>
                 {% endfor %}
+                </ul>
+                </li>
                 {% endfor %}
             {% else %}
                 <h4>No Photos</h4>
