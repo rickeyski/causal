@@ -15,6 +15,7 @@ from causal.main.decorators import can_view_service
 from causal.main.exceptions import ServiceError
 from causal.main.forms import UserProfileForm
 from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
 import re
 
 def history(request, username):
@@ -274,6 +275,7 @@ def index(request):
     )
 
 @login_required
+@csrf_exempt
 def sharing_prefs(request):
     """Enable/disable sharing preferences for services"""
     if request.method == 'POST':

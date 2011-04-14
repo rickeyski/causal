@@ -40,6 +40,7 @@ class ServiceHandler(OAuthServiceHandler):
                 uid = uid_result[0]['uid']
             week_ago_epoch = time.mktime(since.timetuple())
             status_stream = self.query(STATUS_FQL % (int(week_ago_epoch),))
+            link_stream = self.query(LINKED_FQL % (int(week_ago_epoch),))
 
         except Exception, exception:
             raise LoggedServiceError(original_exception=exception)
@@ -50,6 +51,10 @@ class ServiceHandler(OAuthServiceHandler):
                 (user.username, status_stream['error_msg'])
             )
 
+        items = self._convert_status_feed(status_stream, uid, since)
+        
+        items += self._convert_link_feed(link_stream, since)
+        
         return self._convert_status_feed(status_stream, uid, since)
 
     def get_stats_items(self, since):
