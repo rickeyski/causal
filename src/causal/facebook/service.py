@@ -108,7 +108,7 @@ class ServiceHandler(OAuthServiceHandler):
                         # go off and fetch details about a user
                         item.other_peoples_comments = []
                         for comment in strm['comments']['comment_list']:
-                            users = query(USER_NAME_FETCH % (comment['fromid'],))
+                            users = self.query(USER_NAME_FETCH % (comment['fromid'],))
                             for user in users:
                                 user_details = {
                                     'name' : user['name'],
