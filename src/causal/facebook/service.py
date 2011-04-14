@@ -57,7 +57,7 @@ class ServiceHandler(OAuthServiceHandler):
         
         items += self._convert_link_feed(link_stream, since)
         
-        items +=  self._fetch_likes(self.service.auth.access_token.oauth_token, since)
+        items += self._fetch_likes(self.service.auth.access_token.oauth_token, since)
         
         return items
 
@@ -290,9 +290,11 @@ class ServiceHandler(OAuthServiceHandler):
                 info_on_like = simplejson.loads(content)
                 
                 item = ServiceItem()
+                item.created = created
                 item.title = entry['name']
                 item.body = entry['category']
                 item.link_back = info_on_like['link']
+                item.service = self.service
                 items.append(item)
                 
         return items
