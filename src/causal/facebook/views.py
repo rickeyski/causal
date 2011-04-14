@@ -92,7 +92,7 @@ def stats(request, service_id):
     service = get_object_or_404(UserService, pk=service_id)
 
     if check_is_service_id(service, PACKAGE):
-        links, statuses, details, photos, checkins = service.handler.get_stats_items(date.today() - timedelta(days=7))
+        links, statuses, details, photos, checkins, likes = service.handler.get_stats_items(date.today() - timedelta(days=7))
         return render(
             request,
             {'links' : links,
@@ -100,6 +100,7 @@ def stats(request, service_id):
              'details' : details,
              'photos': photos,
              'checkins' : checkins,
+             'likes' : likes,
              },
             'causal/facebook/stats.html'
         )

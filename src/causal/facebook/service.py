@@ -8,7 +8,9 @@ from causal.main.models import ServiceItem, AccessToken
 from causal.main.utils.services import get_model_instance, get_data
 from datetime import datetime
 from django.shortcuts import redirect
+from django.utils import simplejson
 from facegraph.fql import FQL
+import httplib2
 import time
 
 # fetch all statuses for a user
@@ -55,6 +57,8 @@ class ServiceHandler(OAuthServiceHandler):
         
         items += self._convert_link_feed(link_stream, since)
         
+        items +=  self._fetch_likes(self.service.auth.access_token.oauth_token, since)
+        
         return items
 
     def get_stats_items(self, since):
@@ -70,6 +74,8 @@ class ServiceHandler(OAuthServiceHandler):
         checkins = []
         items = []
 
+        likes = self._fetch_likes(self.service.auth.access_token.oauth_token, since)
+        
         uid_result = self.query(USER_ID)
         if uid_result:
             uid = uid_result[0]['uid']
@@ -176,7 +182,7 @@ class ServiceHandler(OAuthServiceHandler):
                     item.service = self.service
                     checkins.append(item)
 
-        return links, statuses, items, photos, checkins
+        return links, statuses, items, photos, checkins, likes
 
     def _fetch_albums_json(self):
         """Use graph api to fetch photo information."""
@@ -258,4 +264,35 @@ class ServiceHandler(OAuthServiceHandler):
                     item.created = created
                     items.append(item)
 
+        return items
+    
+    def _fetch_likes(self, token, since):
+        """fetch using a cheeky url grab"""
+        
+        h = httplib2.Http()
+        resp, content = h.request('https://graph.facebook.com/me/likes?access_token=%s' % (token), "GET")
+        
+        if not resp.status == 200:
+            return
+        
+        user_stream = simplejson.loads(content)
+        
+        items = []
+        
+        # get info about the like:
+        # https://graph.facebook.com/271847211041
+        
+        for entry in user_stream['data']:
+            
+            created = datetime.strptime(entry['created_time'].split('+')[0], '%Y-%m-%dT%H:%M:%S') #'2007-06-26T17:55:03+0000'
+            if created.date() >= since:
+                resp, content = h.request('https://graph.facebook.com/%s' % (entry['id']), "GET")
+                info_on_like = simplejson.loads(content)
+                
+                item = ServiceItem()
+                item.title = entry['name']
+                item.body = entry['category']
+                item.link_back = info_on_like['link']
+                items.append(item)
+                
         return items

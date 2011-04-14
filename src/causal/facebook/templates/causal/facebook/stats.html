@@ -34,8 +34,8 @@
 
             <h3> Stuff You Liked </h3>
             <ul>
-            {% if details %}               
-                {% for status in details %}
+            {% if liked %}               
+                {% for status in liked %}
                     <li>{%if status.link_back %} <a href="{{status.link_back}}"> {{status.created|date:"D H:ma"}}</a>{% endif%}
                         {%if status.liked %} Liked {% endif%} - {{status.body}}
                         <a href="{{status.who_else_liked }}">people who liked this</a>
