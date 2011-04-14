@@ -55,7 +55,7 @@ class ServiceHandler(OAuthServiceHandler):
         
         items += self._convert_link_feed(link_stream, since)
         
-        return self._convert_status_feed(status_stream, uid, since)
+        return items
 
     def get_stats_items(self, since):
         """Return more detailed ServiceItems for the stats page."""
