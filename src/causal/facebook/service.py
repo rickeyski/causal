@@ -139,7 +139,10 @@ class ServiceHandler(OAuthServiceHandler):
                             item.link_back = photo['link']
                             if photo.has_key('name'):
                                 item.title = photo['name']
-                            item.body = photo['picture']
+                            if len(photo['images']) > 3:
+                                item.body = photo['images'][2]['source']
+                            else:
+                                item.body = photo['picture']
                             item.comments = []
                             if photo.has_key('comments'):
                                 for comment in photo['comments']['data']:
