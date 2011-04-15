@@ -1,6 +1,7 @@
 """Exceptions for use in handling service errors"""
 
 import logging
+logger = logging.getLogger('causal')
 
 class ServiceError(Exception):
     """Generic exception for any causal service error, e.g. Twitter is down"""
@@ -22,6 +23,6 @@ class LoggedServiceError(ServiceError):
     def __init__(self, *args, **kwargs):
         super(LoggedServiceError, self).__init__(*args, **kwargs)
         if self.original_exception:
-            logging.error(repr(self.original_exception))
+            logger.error(repr(self.original_exception))
         else:
-            logging.error(repr(self))
+            logger.error(repr(self))
