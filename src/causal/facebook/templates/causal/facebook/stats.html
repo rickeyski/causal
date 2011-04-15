@@ -32,10 +32,24 @@
             {% endif %}
             </ul>
 
-            <h3> Stuff You Liked </h3>
+            <h3> Posts You Liked </h3>
             <ul>
             {% if details %}               
                 {% for status in details %}
+                    <li>{%if status.link_back %} <a href="{{status.link_back}}"> {{status.created|date:"D H:ma"}}</a>{% endif%}
+                        {%if status.liked %} Liked {% endif%} - {{status.body}}
+                        <a href="{{status.who_else_liked }}">people who liked this</a>
+                    </li>
+                {% endfor %}
+            {% else %}
+                <h4>No Likes</h4>
+            {% endif %}
+            </ul>
+            
+            <h3> Pages You Liked </h3>
+            <ul>
+            {% if likes %}               
+                {% for status in likes %}
                     <li>{%if status.link_back %} <a href="{{status.link_back}}"> {{status.created|date:"D H:ma"}}</a>{% endif%}
                         {%if status.liked %} Liked {% endif%} - {{status.body}}
                         <a href="{{status.who_else_liked }}">people who liked this</a>
@@ -50,11 +64,15 @@
             <ul>
             {% if photos %}
                 {%for photo in photos %}
-                {% if photo.link_back %}<a href="{{status.link_back}}">{{photo.created|date:"D H:ma"}}<img src="{{photo.body}}"/>
-                        {%endif%} </a>
+                <li>
+                {% if photo.link_back %}<a href="{{photo.link_back}}">{{photo.created|date:"D H:ma"}}<img src="{{photo.body}}"/> 
+                        {%endif%} </a> {{photo.title}}
+                <ul>
                 {% for comment in photo.comments %}
                     <li>"{{comment.body}}" - {{comment.from_user}}</li>
                 {% endfor %}
+                </ul>
+                </li>
                 {% endfor %}
             {% else %}
                 <h4>No Photos</h4>

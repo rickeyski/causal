@@ -8,7 +8,9 @@ from causal.main.models import ServiceItem, AccessToken
 from causal.main.utils.services import get_model_instance, get_data
 from datetime import datetime
 from django.shortcuts import redirect
+from django.utils import simplejson
 from facegraph.fql import FQL
+import httplib2
 import time
 
 # fetch all statuses for a user
@@ -40,6 +42,7 @@ class ServiceHandler(OAuthServiceHandler):
                 uid = uid_result[0]['uid']
             week_ago_epoch = time.mktime(since.timetuple())
             status_stream = self.query(STATUS_FQL % (int(week_ago_epoch),))
+            link_stream = self.query(LINKED_FQL % (int(week_ago_epoch),))
 
         except Exception, exception:
             raise LoggedServiceError(original_exception=exception)
@@ -50,7 +53,13 @@ class ServiceHandler(OAuthServiceHandler):
                 (user.username, status_stream['error_msg'])
             )
 
-        return self._convert_status_feed(status_stream, uid, since)
+        items = self._convert_status_feed(status_stream, uid, since)
+        
+        items += self._convert_link_feed(link_stream, since)
+        
+        items += self._fetch_likes(self.service.auth.access_token.oauth_token, since)
+        
+        return items
 
     def get_stats_items(self, since):
         """Return more detailed ServiceItems for the stats page."""
@@ -65,6 +74,8 @@ class ServiceHandler(OAuthServiceHandler):
         checkins = []
         items = []
 
+        likes = self._fetch_likes(self.service.auth.access_token.oauth_token, since)
+        
         uid_result = self.query(USER_ID)
         if uid_result:
             uid = uid_result[0]['uid']
@@ -108,7 +119,7 @@ class ServiceHandler(OAuthServiceHandler):
                         # go off and fetch details about a user
                         item.other_peoples_comments = []
                         for comment in strm['comments']['comment_list']:
-                            users = query(USER_NAME_FETCH % (comment['fromid'],))
+                            users = self.query(USER_NAME_FETCH % (comment['fromid'],))
                             for user in users:
                                 user_details = {
                                     'name' : user['name'],
@@ -139,7 +150,10 @@ class ServiceHandler(OAuthServiceHandler):
                             item.link_back = photo['link']
                             if photo.has_key('name'):
                                 item.title = photo['name']
-                            item.body = photo['picture']
+                            if len(photo['images']) > 3:
+                                item.body = photo['images'][2]['source']
+                            else:
+                                item.body = photo['picture']
                             item.comments = []
                             if photo.has_key('comments'):
                                 for comment in photo['comments']['data']:
@@ -168,7 +182,7 @@ class ServiceHandler(OAuthServiceHandler):
                     item.service = self.service
                     checkins.append(item)
 
-        return links, statuses, items, photos, checkins
+        return links, statuses, items, photos, checkins, likes
 
     def _fetch_albums_json(self):
         """Use graph api to fetch photo information."""
@@ -250,4 +264,37 @@ class ServiceHandler(OAuthServiceHandler):
                     item.created = created
                     items.append(item)
 
+        return items
+    
+    def _fetch_likes(self, token, since):
+        """fetch using a cheeky url grab"""
+        
+        h = httplib2.Http()
+        resp, content = h.request('https://graph.facebook.com/me/likes?access_token=%s' % (token), "GET")
+        
+        if not resp.status == 200:
+            return
+        
+        user_stream = simplejson.loads(content)
+        
+        items = []
+        
+        # get info about the like:
+        # https://graph.facebook.com/271847211041
+        
+        for entry in user_stream['data']:
+            
+            created = datetime.strptime(entry['created_time'].split('+')[0], '%Y-%m-%dT%H:%M:%S') #'2007-06-26T17:55:03+0000'
+            if created.date() >= since:
+                resp, content = h.request('https://graph.facebook.com/%s' % (entry['id']), "GET")
+                info_on_like = simplejson.loads(content)
+                
+                item = ServiceItem()
+                item.created = created
+                item.title = entry['name']
+                item.body = entry['category']
+                item.link_back = info_on_like['link']
+                item.service = self.service
+                items.append(item)
+                
         return items
