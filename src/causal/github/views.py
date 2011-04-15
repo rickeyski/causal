@@ -36,7 +36,7 @@ def auth(request):
                 user_feed = {'error': True}
 
             # Check the username is valid
-            if user_feed.has_key('error'):
+            if not isinstance(user_feed, list) and user_feed.has_key('error'):
                 messages.error(request,
                                'Unable to validate your username with github, please check your username and retry.')
             else:
