@@ -31,15 +31,16 @@ def auth(request):
                     service,
                     'http://github.com/%s.json' % (username),
                     disable_oauth=True
-                )[0]
+                )
             except IndexError:
                 user_feed = {'error': True}
 
             # Check the username is valid
             if user_feed.has_key('error'):
                 messages.error(request,
-                               'Unable to validate your username with Git Hub, please check your username and retry.')
+                               'Unable to validate your username with github, please check your username and retry.')
             else:
+                user_feed = user_feed[0]
                 if not service.auth:
                     auth_handler = Auth()
                 else:
@@ -52,7 +53,7 @@ def auth(request):
                 service.public = True
                 service.save()
         else:
-            messages.error(request, 'Please enter a GitHub username')
+            messages.error(request, 'Please enter a github username')
 
     return redirect(settings_redirect(request))
 
