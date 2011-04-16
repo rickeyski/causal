@@ -136,21 +136,21 @@ class ServiceHandler(BaseServiceHandler):
         elif entry['type'] == 'GistEvent':
             item.title = "Created gist %s" % (entry['payload']['desc'])
         elif entry['type'] == 'IssuesEvent':
-            item.body = "Issue #%s was %s." % (str(entry['payload']['number']), entry['payload']['action'])
+            item.title = "Issue #%s was %s." % (str(entry['payload']['number']), entry['payload']['action'])
         elif entry['type'] == 'ForkEvent':
-            item.body = "Repo %s forked." % (entry['payload']['repo'])
+            item.title = "Repo %s forked." % (entry['payload']['repo'])
         elif entry['type'] == 'PushEvent':
-            item.body = "Pushed to repo %s with comment %s." % (entry['payload']['repo'], entry['payload']['shas'][0][2])
+            item.title = "Pushed to repo %s with comment %s." % (entry['payload']['repo'], entry['payload']['shas'][0][2])
         elif entry['type'] == 'CreateEvent':
-            item.body = "Branch %s for %s." % (entry['payload']['object_name'], entry['payload']['name'])
+            item.title = "Branch %s for %s." % (entry['payload']['object_name'], entry['payload']['name'])
         elif entry['type'] == 'WatchEvent':
-            item.body = "Started watching %s." % (entry['payload']['repo'])
+            item.title = "Started watching %s." % (entry['payload']['repo'])
         elif entry['type'] == 'FollowEvent':
-            item.body = "Started following %s." % (entry['payload']['target']['login'])
+            item.title = "Started following %s." % (entry['payload']['target']['login'])
         elif entry['type'] == 'GistEvent':
-            item.body = "Snippet: %s" % (entry['payload']['snippet'])
+            item.title = "Snippet: %s" % (entry['payload']['snippet'])
         elif entry['type'] == 'DeleteEvent':
-            item.body = "Deleted: %s called %s" % (entry['payload']['ref_type'], entry['payload']['ref'])
+            item.title = "Deleted: %s called %s" % (entry['payload']['ref_type'], entry['payload']['ref'])
         elif entry['type'] == 'GollumEvent':
             pass
         else:
