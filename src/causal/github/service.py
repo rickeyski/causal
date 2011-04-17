@@ -68,7 +68,7 @@ class ServiceHandler(BaseServiceHandler):
         return items
 
     def _convert_date(self, entry):
-        """Apply the offset from githuub timing to the date.
+        """Apply the offset from github timing to the date.
         """
 
         converted_date = None
@@ -153,5 +153,7 @@ class ServiceHandler(BaseServiceHandler):
             item.title = "Deleted: %s called %s" % (entry['payload']['ref_type'], entry['payload']['ref'])
         elif entry['type'] == 'GollumEvent':
             pass
+        elif entry['type'] == 'IssueCommentEvent':
+            item.title = "Commented on issue with id of %s" % (entry['payload']['issue_id'])
         else:
             item.title = "Unknown Event!"
