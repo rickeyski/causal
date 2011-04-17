@@ -65,14 +65,15 @@ def stats(request, service_id):
     service = get_object_or_404(UserService, pk=service_id)
 
     if check_is_service_id(service, PACKAGE):
-        commits, avatar, commit_times = service.handler.get_stats_items(date.today() - timedelta(days=7))
+        commits, avatar, commit_times, common_time = service.handler.get_stats_items(date.today() - timedelta(days=7))
 
         return render(
             request,
             {
                 'commits': commits,
                 'avatar' : avatar,
-                'commit_times' : commit_times
+                'commit_times' : commit_times,
+                'common_time' : common_time
             },
             'causal/github/stats.html'
         )

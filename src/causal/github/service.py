@@ -104,10 +104,10 @@ class ServiceHandler(BaseServiceHandler):
 
                 if created.date() > since:
                     hour = created.strftime('%H')
-                    if commit_times.has_key(hour + ' ish'):
-                        commit_times[hour+' ish'] = commit_times[hour+' ish'] + 1
+                    if commit_times.has_key(hour):
+                        commit_times[hour] += + 1
                     else:
-                        commit_times[hour+' ish'] = 1
+                        commit_times[hour] = 1
 
                     item = ServiceItem()
                     self._set_title_body(entry, item)
@@ -123,8 +123,22 @@ class ServiceHandler(BaseServiceHandler):
             key=lambda x: x[1]
         ))
 
-        return items, avatar, commit_times
+        return items, avatar, commit_times, self._most_common_commit_time(commit_times)
 
+    def _most_common_commit_time(self, commits):
+        """Take a list of commit times and return the most common time
+        of commits."""
+        
+        if not commits:
+            return False
+        
+        hour = commits.keys()[0]
+        
+        if hour == '23':
+            return '%s:00 and 00:00' % (hour)
+        else:
+            return '%s:00 and %s:00' % (hour, int(hour) + 1)
+    
     def _set_title_body(self, entry, item):
         """Set the title and body based on the event type.
         """

@@ -24,10 +24,12 @@
             </ul>
 
             {% if commits %}
-            <h3>Hours for Committing Code</h3>
+            <h3>Commit Break Down</h3>
+            <h4>You do most of your commiting between {{common_time}}</h4>
+            <h4>Break Down of Commit Times</h4>
             <ul>
                 {% for hour, count in commit_times.iteritems %}
-                <li>{{hour}} - {{count}}</li>
+                <li>{{hour}}:00 - {{count}} commits</li>
                 {% endfor %}
             </ul>
             {% endif %}
