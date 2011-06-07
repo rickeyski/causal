@@ -7,12 +7,6 @@ from causal.main.decorators import cache_page
 
 from causal.main.views import *
 
-if settings.DEBUG:
-    try:
-        import causal.wingdbstub
-    except ImportError:
-        pass
-
 from django.contrib import admin
 admin.autodiscover()
 

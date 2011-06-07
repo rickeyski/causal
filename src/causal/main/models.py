@@ -33,7 +33,7 @@ class ServiceApp(models.Model):
         if not self._module:
             self._module = import_module("%s.service" % (self.module_name,))
         return self._module
-    
+
     @property
     def display_name(self):
         return self.module.ServiceHandler.display_name
@@ -81,7 +81,7 @@ class UserService(models.Model):
     auth = generic.GenericForeignKey('auth_type', 'auth_object_id')
 
     _handler = None
-    
+
     class Meta:
         unique_together = ("user", "app",)
 
@@ -216,18 +216,17 @@ except ImportError:
     pass
 
 
-# Not a django.db.models.Model, just a common container for service data
-class ServiceItem(object):
-    def __init__(self):
-        self.created = None #datetime
-        self.title = None #str/unicode
-        self.body = None #str/unicode
-        self.location = {
-            'long': None, #str
-            'lat': None, #str
-        } #dict
-        self.service = None #Service
-        self.link_back = None #str/unicode
+class ServiceItem(models.Model):
+    """Container for service item data
+    """
+
+    created = models.DateTimeField()
+    title = models.TextField()
+    body = models.TextField()
+    location_long = models.FloatField()
+    location_lat = models.FloatField()
+    service = models.ForeignKey(UserService)
+    link_back = models.TextField()
 
     @property
     def class_name(self):
