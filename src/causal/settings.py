@@ -184,6 +184,9 @@ LOGOUT_REDIRECT_URL = '/'
 # User profile model to provide extra data for Tiqual users
 AUTH_PROFILE_MODULE = 'main.userprofile'
 
+# Personl data storage options
+CAUSAL_PERSONAL_DATA_STORE = False
+
 try:
     # Import local setting overrides, see local_settings.py.example
     from local_settings import *
