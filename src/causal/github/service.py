@@ -158,7 +158,7 @@ class ServiceHandler(BaseServiceHandler):
         elif entry['type'] == 'CreateEvent':
             item.title = "Branch %s for %s." % (entry['payload']['object_name'], entry['payload']['name'])
         elif entry['type'] == 'WatchEvent':
-            item.title = "Started watching %s." % (entry['payload']['repository'])
+            item.title = "Started watching %s." % (entry['repository']['name'])
         elif entry['type'] == 'FollowEvent':
             item.title = "Started following %s." % (entry['payload']['target']['login'])
         elif entry['type'] == 'GistEvent':
