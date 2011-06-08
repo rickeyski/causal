@@ -227,6 +227,10 @@ class ServiceItem(models.Model):
     location_lat = models.FloatField()
     service = models.ForeignKey(UserService)
     link_back = models.TextField()
+    external_service_id = models.CharField(max_length=255)
+
+    class Meta:
+        unique_together = (('service','external_service_id'),)
 
     @property
     def location(self):
