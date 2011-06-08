@@ -229,6 +229,10 @@ class ServiceItem(models.Model):
     link_back = models.TextField()
 
     @property
+    def location(self):
+        return {'long': self.location_long, 'lat': self.location_lat}
+
+    @property
     def class_name(self):
         return self.service and self.service.class_name or ''
 
