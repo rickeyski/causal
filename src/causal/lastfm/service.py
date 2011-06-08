@@ -116,7 +116,6 @@ class ServiceHandler(BaseServiceHandler):
         if gigs and gigs.has_key('events') and gigs['events'].has_key('event') :
             for gig in gigs['events']['event']:
                 item = ServiceItem()
-                item.location = {}
                 try:
                     if gig.has_key('venue') and \
                        gig['venue'].has_key('name') and \

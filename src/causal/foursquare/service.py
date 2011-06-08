@@ -44,7 +44,6 @@ class ServiceHandler(OAuthServiceHandler):
 
                 if created.date() >= since:
                     item = ServiceItem()
-                    item.location = {}
                     item.link_back = 'http://foursquare.com/venue/%s' % (checkin['venue']['id'],)
                     item.title = checkin['venue']['name']
 

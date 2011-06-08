@@ -163,7 +163,6 @@ class ServiceHandler(BaseServiceHandler):
                 item.body = '<br/><img src="%s" />' % (item.url_thumb,)
 
                 # Add location
-                item.location = {}
                 if pic_json['photo'].has_key('location'):
                     item.location['lat'] = pic_json['photo']['location']['latitude']
                     item.location['long'] = pic_json['photo']['location']['longitude']
