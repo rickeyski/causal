@@ -63,6 +63,5 @@ class ServiceHandler(OAuthServiceHandler):
                         item.icon = checkin['venue']['primarycategory']['iconurl']
 
                     items.append(item)
-                    del(item)
 
         return items
