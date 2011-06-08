@@ -185,7 +185,7 @@ LOGOUT_REDIRECT_URL = '/'
 AUTH_PROFILE_MODULE = 'main.userprofile'
 
 # Personl data storage options
-CAUSAL_PERSONAL_DATA_STORE = False
+ENABLE_PERSONAL_DATA_STORE = False
 
 try:
     # Import local setting overrides, see local_settings.py.example

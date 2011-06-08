@@ -17,6 +17,12 @@ from causal.main.forms import UserProfileForm
 from django.contrib import messages
 import re
 
+ENABLE_PERSONAL_DATA_STORE = getattr(
+    settings,
+    'ENABLE_PERSONAL_DATA_STORE',
+    False
+)
+
 def history(request, username):
     template_values = {}
 
