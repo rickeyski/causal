@@ -42,6 +42,9 @@ class ServiceHandler(BaseServiceHandler):
 
                     # Person making comment
                     item.author = entry.author
+
+                    # Unique ID
+                    item.external_service_id = entry['id']
                     items.append(item)
         except Exception, e:
             raise LoggedServiceError(original_exception=e)
