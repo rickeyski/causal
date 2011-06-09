@@ -61,5 +61,6 @@ class ServiceHandler(OAuthServiceHandler):
 
                     if checkin['venue'].has_key('primarycategory'):
                         item.icon = checkin['venue']['primarycategory']['iconurl']
+                    item.external_service_id = checkin['id']
                     items.append(item)
         return items
