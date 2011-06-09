@@ -8,6 +8,14 @@ from causal.main.exceptions import LoggedServiceError
 from datetime import datetime
 from time import time, mktime
 
+try:
+    import hashlib
+    hash = hashlib.md5()
+except ImportError:
+    # for Python < 2.5
+    import md5
+    hash = md5.new()
+
 MAX_RESULTS = '200'
 
 class ServiceHandler(BaseServiceHandler):
@@ -58,6 +66,13 @@ class ServiceHandler(BaseServiceHandler):
 
                     if type(item.created) is tuple and len(item.created) > 0:
                         item.created = item.created[0]
+
+                    # Generate a unique ID for this item
+                    hash.update("%s_%s" % (
+                        track['name'],
+                        entry['date']['#text'],
+                    ))
+                    item.external_service_id = hash.digest()
 
                     items.append(item)
 
