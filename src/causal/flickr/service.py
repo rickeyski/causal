@@ -53,6 +53,7 @@ class ServiceHandler(BaseServiceHandler):
 
                 item.body = '<br/><img src="%s" />' % (item.url_thumb,)
                 item.service = self.service
+                item.external_service_id = pic_json['photo']['id']
 
                 items.append(item)
         return items
