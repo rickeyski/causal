@@ -59,6 +59,7 @@ class ServiceHandler(OAuthServiceHandler):
                     item.location['lat'] = status.geo['coordinates'][0]
                     item.location['long'] = status.geo['coordinates'][1]
                 item.service = self.service
+                item.external_service_id = status.id_str
                 items.append(item)
 
         return items
