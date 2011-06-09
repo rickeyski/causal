@@ -11,6 +11,14 @@ from dateutil import parser
 from datetime import datetime, timedelta
 from django.utils import simplejson
 
+try:
+    import hashlib
+    hash = hashlib.md5()
+except ImportError:
+    # for Python < 2.5
+    import md5
+    hash = md5.new()
+
 class ServiceHandler(BaseServiceHandler):
     display_name = 'Delicious'
 
@@ -48,6 +56,13 @@ class ServiceHandler(BaseServiceHandler):
                         item.notes = entry['n']
                         item.tags = entry['t']
                         item.service = self.service
+
+                        # Generate a unique ID for this item
+                        hash.update("%s:%s" % (
+                            entry['u'],
+                            entry['dt'],
+                        ))
+                        item.external_service_id = hash.digest()
                         items.append(item)
                     except:
                         pass

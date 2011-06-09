@@ -61,7 +61,5 @@ class ServiceHandler(OAuthServiceHandler):
 
                     if checkin['venue'].has_key('primarycategory'):
                         item.icon = checkin['venue']['primarycategory']['iconurl']
-
                     items.append(item)
-
         return items

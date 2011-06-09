@@ -9,6 +9,14 @@ from causal.main.utils.services import get_data
 from causal.main.exceptions import LoggedServiceError
 from django.utils.datastructures import SortedDict
 
+try:
+    import hashlib
+    hash = hashlib.md5()
+except ImportError:
+    # for Python < 2.5
+    import md5
+    hash = md5.new()
+
 KEEP_TAGS = ('a', 'span', 'code',)
 
 class ServiceHandler(BaseServiceHandler):
@@ -44,7 +52,7 @@ class ServiceHandler(BaseServiceHandler):
         )
 
     def _convert_feed(self, feed, since):
-        """Take the user's atom feed.
+        """Take the user's json feed.
         """
 
         items = []
@@ -63,6 +71,15 @@ class ServiceHandler(BaseServiceHandler):
                         if entry.has_key('url'):
                             item.link_back = entry['url']
                     item.service = self.service
+
+                    # Generate a unique ID for this item
+                    hash.update("%s_%s/%s:%s" % (
+                        entry['type'],
+                        entry['created_at'],
+                        entry['actor'],
+                        entry['url']
+                    ))
+                    item.external_service_id = hash.digest()
                     items.append(item)
 
         return items
@@ -86,7 +103,7 @@ class ServiceHandler(BaseServiceHandler):
         return converted_date
 
     def _convert_stats_feed(self, feed, since):
-        """Take the user's atom feed.
+        """Take the user's json feed.
         """
 
         items = []
@@ -128,17 +145,17 @@ class ServiceHandler(BaseServiceHandler):
     def _most_common_commit_time(self, commits):
         """Take a list of commit times and return the most common time
         of commits."""
-        
+
         if not commits:
             return False
-        
+
         hour = commits.keys()[0]
-        
+
         if hour == '23':
             return '%s:00 and 00:00' % (hour)
         else:
             return '%s:00 and %s:00' % (hour, int(hour) + 1)
-    
+
     def _set_title_body(self, entry, item):
         """Set the title and body based on the event type.
         """
