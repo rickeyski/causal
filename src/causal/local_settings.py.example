@@ -50,6 +50,7 @@ SERVICE_CONFIG = {
    },
    'causal.facebook': {
        'auth': {
+           'app_id' : '123'
            'consumer_key': 'blahblah',
            'consumer_secret': '12356789012345'
        }
