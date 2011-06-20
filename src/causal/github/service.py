@@ -152,13 +152,13 @@ class ServiceHandler(BaseServiceHandler):
         elif entry['type'] == 'IssuesEvent':
             item.title = "Issue #%s was %s." % (str(entry['payload']['number']), entry['payload']['action'])
         elif entry['type'] == 'ForkEvent':
-            item.title = "Repo %s forked." % (entry['payload']['repo'])
+            item.title = "Repo %s forked." % (entry['payload']['repository'])
         elif entry['type'] == 'PushEvent':
-            item.title = "Pushed to repo %s with comment %s." % (entry['payload']['repo'], entry['payload']['shas'][0][2])
+            item.title = "Pushed to repo %s with comment %s." % (entry['payload']['repository'], entry['payload']['shas'][0][2])
         elif entry['type'] == 'CreateEvent':
             item.title = "Branch %s for %s." % (entry['payload']['object_name'], entry['payload']['name'])
         elif entry['type'] == 'WatchEvent':
-            item.title = "Started watching %s." % (entry['payload']['repo'])
+            item.title = "Started watching %s." % (entry['repository']['name'])
         elif entry['type'] == 'FollowEvent':
             item.title = "Started following %s." % (entry['payload']['target']['login'])
         elif entry['type'] == 'GistEvent':
