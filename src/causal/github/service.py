@@ -140,34 +140,37 @@ class ServiceHandler(BaseServiceHandler):
             return '%s:00 and %s:00' % (hour, int(hour) + 1)
     
     def _set_title_body(self, entry, item):
-        """Set the title and body based on the event type.
-        """
+        """Set the title and body based on the event type."""
 
         item.body = ''
-
-        if entry['type'] == 'CreateEvent':
-            item.title = "Created branch %s from %s" % (entry['payload']['object_name'],entry['payload']['name'])
-        elif entry['type'] == 'GistEvent':
-            item.title = "Created gist %s" % (entry['payload']['desc'])
-        elif entry['type'] == 'IssuesEvent':
-            item.title = "Issue #%s was %s." % (str(entry['payload']['number']), entry['payload']['action'])
-        elif entry['type'] == 'ForkEvent':
-            item.title = "Repo %s forked." % (entry['payload']['repository'])
-        elif entry['type'] == 'PushEvent':
-            item.title = "Pushed to repo %s with comment %s." % (entry['payload']['repository'], entry['payload']['shas'][0][2])
-        elif entry['type'] == 'CreateEvent':
-            item.title = "Branch %s for %s." % (entry['payload']['object_name'], entry['payload']['name'])
-        elif entry['type'] == 'WatchEvent':
-            item.title = "Started watching %s." % (entry['repository']['name'])
-        elif entry['type'] == 'FollowEvent':
-            item.title = "Started following %s." % (entry['payload']['target']['login'])
-        elif entry['type'] == 'GistEvent':
-            item.title = "Snippet: %s" % (entry['payload']['snippet'])
-        elif entry['type'] == 'DeleteEvent':
-            item.title = "Deleted: %s called %s" % (entry['payload']['ref_type'], entry['payload']['ref'])
-        elif entry['type'] == 'GollumEvent':
-            pass
-        elif entry['type'] == 'IssueCommentEvent':
-            item.title = "Commented on issue with id of %s" % (entry['payload']['issue_id'])
-        else:
+        
+        try:
+            if entry['type'] == 'CreateEvent':
+                item.title = "Created branch %s from %s" % (entry['payload']['object_name'],entry['payload']['name'])
+            elif entry['type'] == 'GistEvent':
+                item.title = "Created gist %s" % (entry['payload']['desc'])
+            elif entry['type'] == 'IssuesEvent':
+                item.title = "Issue #%s was %s." % (str(entry['payload']['number']), entry['payload']['action'])
+            elif entry['type'] == 'ForkEvent':
+                item.title = "Repo %s forked." % (entry['repository']['name'])
+            elif entry['type'] == 'PushEvent':
+                item.title = "Pushed to repo %s with comment %s." % (entry['repository']['name'], entry['payload']['shas'][0][2])
+            elif entry['type'] == 'CreateEvent':
+                item.title = "Branch %s for %s." % (entry['payload']['object_name'], entry['payload']['name'])
+            elif entry['type'] == 'WatchEvent':
+                item.title = "Started watching %s." % (entry['repository']['name'])
+            elif entry['type'] == 'FollowEvent':
+                item.title = "Started following %s." % (entry['payload']['target']['login'])
+            elif entry['type'] == 'GistEvent':
+                item.title = "Snippet: %s" % (entry['payload']['snippet'])
+            elif entry['type'] == 'DeleteEvent':
+                item.title = "Deleted: %s called %s" % (entry['payload']['ref_type'], entry['payload']['ref'])
+            elif entry['type'] == 'GollumEvent':
+                pass
+            elif entry['type'] == 'IssueCommentEvent':
+                item.title = "Commented on issue with id of %s" % (entry['payload']['issue_id'])
+            else:
+                item.title = "Unknown Event!"
+                
+        except:
             item.title = "Unknown Event!"
