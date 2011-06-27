@@ -13,6 +13,7 @@ from optparse import OptionParser
 template = """[buildout]
 parts = dependencies
         django
+	python
 develop = %(cwd)s
 eggs =
         causal
@@ -34,6 +35,11 @@ wsgi = true
 [versions]
 zc.recipe.egg = 1.0.0
 %(versions)s
+
+[python]
+recipe = zc.recipe.egg
+interpreter = python
+eggs = ${buildout:eggs}
 """
 
 usage = """usage: %prog [options]"""

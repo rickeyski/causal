@@ -7,7 +7,7 @@
             <ul>
             {% if checkins %}
                 {% for checkin in checkins %}
-                    <li>{{checkin.created}} - <a href="{{checkin.link_back}}">{{checkin.title}}</a></li>
+                    <li>{%if checkin.link_back %} <a href="{{checkin.link_back}}"> {{checkin.created|date:"D H:ma"}}</a>{% endif%}</li>
                 {% endfor %}
             {% else %}
                 <h4>No checkins? Get out more!</h4>

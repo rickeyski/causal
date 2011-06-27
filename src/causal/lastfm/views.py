@@ -27,7 +27,7 @@ def auth(request):
         if username:
             user_feed = get_data(
                 service,
-                'http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=%s&api_key=%s&format=json'  % (
+                'http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=%s&api_key=%s&format=json'  % (
                     username,
                     service.app.auth_settings['api_key']
                 ),
@@ -35,27 +35,27 @@ def auth(request):
             )
 
             # check we have a valid username
-            if not user_feed.has_key('error'):
-                if not service.auth:
-                    auth_handler = Auth()
-                else:
-                    auth_handler = service.auth
-                auth_handler.username = username
-                auth_handler.save()
-                if not service.auth:
-                    service.auth = auth_handler
-
-                service.setup = True
-                service.public = True
-                service.save()
-
-            else:
+            if user_feed.has_key('error'):
                 messages.error(
                     request,
                     'Unable to validate your username "%s" with Last.fm, please check your username and retry.' % (
-                        username,
+                    username,
                     )
                 )
+                return redirect(settings_redirect(request))
+            
+            if not service.auth:
+                auth_handler = Auth()
+            else:
+                auth_handler = service.auth
+            auth_handler.username = username
+            auth_handler.save()
+            if not service.auth:
+                service.auth = auth_handler
+
+            service.setup = True
+            service.public = True
+            service.save()
 
         else:
             messages.error(request, 'Please enter a Last.fm username')
