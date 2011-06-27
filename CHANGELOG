@@ -1,0 +1,13 @@
+ChangeLog for Causal
+====================
+
+1.0.7 (2011-06-27)
+------------------
+
+- Updated Github app to use v3 user API.
+- Fixed broken Github "repo" => "repository" references in user JSON feed.
+- Updated Last.fm username checking to use profile page.
+- Buildout config now generates bin/python wrapper script.
+- Fixed buildout bootstrap.py not working under Natty Narwal.
+- Added Github "IssueCommentEvent" event to parser.
+- Minor fixes to Last.fm and Foursquare stats pages.
