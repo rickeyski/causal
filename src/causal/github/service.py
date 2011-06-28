@@ -151,7 +151,7 @@ class ServiceHandler(BaseServiceHandler):
             elif entry['type'] == 'ForkEvent':
                 item.title = "Repo %s forked." % (entry['repository']['name'])
             elif entry['type'] == 'PushEvent':
-                item.title = "Pushed to repo %s with comment %s." % (entry['repository']['name'], entry['payload']['shas'][0][2])
+                item.title = "Pushed to repo %s with comment \"%s\"." % (entry['repository']['name'], entry['payload']['shas'][0][2])
             elif entry['type'] == 'CreateEvent':
                 item.title = "Branch %s for %s." % (entry['payload']['object_name'], entry['payload']['name'])
             elif entry['type'] == 'WatchEvent':
