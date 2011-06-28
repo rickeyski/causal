@@ -1,6 +1,11 @@
 ChangeLog for Causal
 ====================
 
+1.0.9 (2011-06-28)
+------------------
+
+- Fixed another mistake in Github app (* bassdread hangs head in shame and plans to make some proper tests...)
+
 1.0.8 (2011-06-28)
 ------------------
 
