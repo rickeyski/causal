@@ -103,7 +103,7 @@ def get_data(service, url, disable_oauth=False):
     """
 
     if disable_oauth:
-        h = httplib2.Http()
+        h = httplib2.Http(disable_ssl_certificate_validation=True)
         resp, content = h.request(url, "GET")
     else:
         auth_settings = get_config(service.app.module_name, 'auth')
