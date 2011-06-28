@@ -140,7 +140,10 @@ class ServiceHandler(BaseServiceHandler):
         
         try:
             if entry['type'] == 'CreateEvent':
-                item.title = "Created branch %s from %s" % (entry['payload']['object_name'],entry['payload']['name'])
+                if entry['payload'].has_key('object_name'):
+                    item.title = "Created branch %s from %s" % (entry['payload']['object_name'], entry['payload']['name'])
+                else:
+                    item.title = "Created branch %s from %s" % (entry['payload']['master_branch'], entry['repository']['name'])                
             elif entry['type'] == 'GistEvent':
                 item.title = "Created gist %s" % (entry['payload']['desc'])
             elif entry['type'] == 'IssuesEvent':
@@ -163,6 +166,8 @@ class ServiceHandler(BaseServiceHandler):
                 pass
             elif entry['type'] == 'IssueCommentEvent':
                 item.title = "Commented on issue with id of %s" % (entry['payload']['issue_id'])
+            elif entry['type'] == 'PullRequestEvent':
+                item.title = "Created pull for %s" % (entry['repository']['name'])
             else:
                 item.title = "Unknown Event!"
                 
