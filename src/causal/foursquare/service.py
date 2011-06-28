@@ -46,7 +46,7 @@ class ServiceHandler(OAuthServiceHandler):
                         elif checkin['venue'].has_key('city'):
                             item.body = "In %s" % (checkin['venue']['location']['city'])
                         else:
-                            item.body = "Called: %s " + checkin['venue']['name']
+                            item.body = "%s" % (checkin['venue']['name'])
 
                     if checkin['venue']['location'].has_key('lat') and checkin['venue']['location']['lng']:
                         item.location['lat'] = checkin['venue']['location']['lat']
@@ -54,9 +54,14 @@ class ServiceHandler(OAuthServiceHandler):
 
                     item.created = created
                     item.service = self.service
+                    
+                    if checkin.has_key('isMayor'):
+                        item.is_mayor = checkin['isMayor']
+                    else:
+                        pass
 
                     if checkin['venue'].has_key('categories') and len(checkin['venue']['categories']) > 0:
-                        checkin['venue']['categories'][0]['icon']
+                        item.icon = checkin['venue']['categories'][0]['icon']
 
                     items.append(item)
                     del(item)

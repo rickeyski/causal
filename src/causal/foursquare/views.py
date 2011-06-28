@@ -9,6 +9,7 @@ from causal.main.utils.services import get_model_instance, user_login, \
 from causal.main.utils.views import render
 from datetime import date, timedelta
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 
@@ -25,20 +26,24 @@ def verify_auth(request):
     url = "https://foursquare.com/oauth2/access_token?client_id=%s&client_secret=%s&grant_type=authorization_code&redirect_uri=%s&code=%s" % (service.app.auth_settings['consumer_key'], service.app.auth_settings['consumer_secret'], service.app.auth_settings['return_url'], code)
     
     access_token = get_url(url)
-    
-    at = AccessToken.objects.create(
-            oauth_token = access_token["access_token"],
-            oauth_token_secret = '',
-            oauth_verify = ''
-        )
 
-    service.auth.access_token = at
-    service.auth.save()
+    if access_token.has_key('error'):
+        messages.error(request, 'Unable to validate your with Foursquare, please wait a few minutes and retry.')
+    else:
+        at = AccessToken.objects.create(
+                oauth_token = access_token["access_token"],
+                oauth_token_secret = '',
+                oauth_verify = ''
+            )
     
-    service.setup = True
-    service.public = True
-    service.save()
-
+        service.auth.access_token = at
+        service.auth.save()
+        
+        service.setup = True
+        service.public = True
+        service.save()
+        
+        
     return redirect(settings_redirect(request))
 
 @login_required(redirect_field_name='redirect_to')
