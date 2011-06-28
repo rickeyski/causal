@@ -26,7 +26,7 @@ class ServiceHandler(BaseServiceHandler):
     def _get_feed(self):
         feed = get_data(
             self.service,
-            'http://github.com/%s.json' % (self.service.auth.username,),
+            'https://github.com/%s.json' % (self.service.auth.username,),
             disable_oauth=True
         )
         return feed
