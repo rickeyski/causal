@@ -65,14 +65,24 @@
             {% if photos %}
                 {%for photo in photos %}
                 <li>
-                {% if photo.link_back %}<a href="{{photo.link_back}}">{{photo.created|date:"D H:ma"}}<img src="{{photo.body}}"/> 
-                        {%endif%} </a> {{photo.title}}
+                {% if photo.link_back %}<a href="{{photo.link_back}}"><h4>Uploaded: {{photo.created|date:"D H:ma"}} </h4>
+                    <br/><img src="{{photo.body}}"/> 
+                 </a>
+                 {%endif%} 
+                <br/>
+                <h4>Title: {{photo.title}}</h4>
+                <h4>Comments:</h4>
                 <ul>
+                {% if photo.comments %}
                 {% for comment in photo.comments %}
-                    <li>"{{comment.body}}" - {{comment.from_user}}</li>
+                <li>"{{comment.body}}" - {{comment.from_user}}</li>
                 {% endfor %}
+                {% else %}
+                <li>No comments yet.</li>
+                {% endif %}
                 </ul>
                 </li>
+                <br/>
                 {% endfor %}
             {% else %}
                 <h4>No Photos</h4>
