@@ -18,24 +18,28 @@ class ServiceHandler(BaseServiceHandler):
         """Fetch updates.
         """
 
-        return self._convert_feed(since)
+        return self._convert_feed(
+            self._get_feed(),
+            since
+        )
 
-
-    def get_stats_items(self, since):
-        """Fetch stats updates.
-        """
-
-        return self._convert_stats_feed(since)
-
-    def _convert_feed(self, since):
-        """Take the user's atom feed.
-        """
-
+    def _get_feed(self):
         feed = get_data(
             self.service,
             'http://github.com/%s.json' % (self.service.auth.username,),
             disable_oauth=True
         )
+        return feed
+
+    def get_stats_items(self, since):
+        """Fetch stats updates.
+        """
+
+        return self._convert_stats_feed(self._get_feed(), since)
+
+    def _convert_feed(self, feed, since):
+        """Take the user's atom feed.
+        """
         
         items = []
 
