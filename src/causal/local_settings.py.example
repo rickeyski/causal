@@ -50,7 +50,7 @@ SERVICE_CONFIG = {
    },
    'causal.facebook': {
        'auth': {
-           'app_id' : '123'
+           'app_id': '123'
            'consumer_key': 'blahblah',
            'consumer_secret': '12356789012345'
        }
@@ -59,6 +59,7 @@ SERVICE_CONFIG = {
        'auth': {
            'consumer_key': 'ASDFGHJKLQWERTYUIOP',
            'consumer_secret': 'ASDFGHJKL1234567890'
+           'redirect_url': 'http://localhost:8080/facebook/auth',
        }
    },
    'causal.flickr': {

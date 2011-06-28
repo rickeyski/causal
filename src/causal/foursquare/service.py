@@ -3,9 +3,10 @@ import oauth2 as oauth
 from datetime import datetime, timedelta
 from causal.main.handlers import OAuthServiceHandler
 from causal.main.models import ServiceItem
-from causal.main.utils.services import get_model_instance, get_data
+from causal.main.utils.services import get_model_instance, get_data, get_url
 from causal.main.exceptions import LoggedServiceError
 from django.shortcuts import render_to_response, redirect
+from datetime import datetime
 
 class ServiceHandler(OAuthServiceHandler):
     display_name = 'Foursquare'
@@ -15,7 +16,8 @@ class ServiceHandler(OAuthServiceHandler):
         """
 
         try:
-            checkins = get_data(self.service, 'http://api.foursquare.com/v1/history.json')
+            url = "https://api.foursquare.com/v2/users/self/checkins?oauth_token=%s" % (self.service.auth.access_token.oauth_token)
+            checkins = get_url(url)
         except Exception, e:
             raise LoggedServiceError(original_exception=e)
 
@@ -26,21 +28,9 @@ class ServiceHandler(OAuthServiceHandler):
         """
 
         items = []
-        if json and json.has_key('checkins'):
-            for checkin in json['checkins']:
-
-                # grab the +0000 bit on the end of the date and use it make the time right
-                offset = checkin['created'].rsplit(' ')[-1]
-                offset = offset[1:]
-                offset = offset[:2]
-
-                time_offset = timedelta(hours=int(offset))
-
-                created = datetime.strptime(
-                    checkin['created'].replace(' +0000', ''),
-                    '%a, %d %b %y %H:%M:%S'
-                ) #'Fri, 04 Feb 11 12:42:38 +0000'
-                created = created + time_offset
+        if json and json['response'].has_key('checkins'):
+            for checkin in json['response']['checkins']['items']:
+                created = datetime.fromtimestamp(checkin['createdAt'])
 
                 if created.date() >= since:
                     item = ServiceItem()
@@ -51,17 +41,22 @@ class ServiceHandler(OAuthServiceHandler):
                     if checkin.has_key('shout') and checkin['shout']:
                         item.body = checkin['shout']
                     else:
-                        item.body = checkin['venue']['city']
+                        if len(checkin['venue']['categories']) > 0 and checkin['venue']['location'].has_key('city'):
+                            item.body = "A %s in %s" % (checkin['venue']['categories'][0]['name'], checkin['venue']['location']['city'])
+                        elif checkin['venue'].has_key('city'):
+                            item.body = "In %s" % (checkin['venue']['location']['city'])
+                        else:
+                            item.body = "Called: %s " + checkin['venue']['name']
 
-                    if checkin['venue'].has_key('geolat') and checkin['venue']['geolat']:
-                        item.location['lat'] = checkin['venue']['geolat']
-                        item.location['long'] = checkin['venue']['geolong']
+                    if checkin['venue']['location'].has_key('lat') and checkin['venue']['location']['lng']:
+                        item.location['lat'] = checkin['venue']['location']['lat']
+                        item.location['long'] = checkin['venue']['location']['lng']
 
                     item.created = created
                     item.service = self.service
 
-                    if checkin['venue'].has_key('primarycategory'):
-                        item.icon = checkin['venue']['primarycategory']['iconurl']
+                    if checkin['venue'].has_key('categories') and len(checkin['venue']['categories']) > 0:
+                        checkin['venue']['categories'][0]['icon']
 
                     items.append(item)
                     del(item)
