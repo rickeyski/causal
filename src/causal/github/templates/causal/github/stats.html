@@ -9,7 +9,7 @@
                 {% if commits %}
                 {% for commit in commits %}
                 <li> {%if commit.link_back %} <a href="{{commit.link_back}}"> {{commit.created|date:"D H:ma" }}</a>{% endif%}
-                {{ commit.title }}</li>
+                {{ commit.title }}{% if commit.body %} - {{ commit.body }} {% endif %}</li>
                 {%if commit.links %}
                 <ul>
                     {% for link in commit.links %}
