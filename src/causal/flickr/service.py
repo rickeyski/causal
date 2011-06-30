@@ -122,13 +122,13 @@ class ServiceHandler(BaseServiceHandler):
                 item = ServiceItem()
 
                 # Info about the pic
-                pic = se.fflickr.photos_getInfo(photo_id=photo['id'], format='json', nojsoncallback='1')
+                pic = self.flickr.photos_getInfo(photo_id=photo['id'], format='json', nojsoncallback='1')
                 pic_json = simplejson.loads(pic)
 
                 # Info about how the pic was taken
                 exif = self.flickr.photos_getExif(photo_id=photo['id'], format='json', nojsoncallback ='1')
                 exif_json = simplejson.loads(exif)
-                item.camera_make = self._extract_camera_type(exif_json)
+                item.camera_make, item.camera_model = self._extract_camera_type(exif_json)
                 item.title = pic_json['photo']['title']['_content']
 
                 # Use date from when the photo was uploaded to flickr NOT when it was taken
@@ -177,18 +177,16 @@ class ServiceHandler(BaseServiceHandler):
         """Return the make and model of a photo.
         """
 
+        make = 'Unknown make'
+        model = 'Unknown model'
+        
         try:
-            if json['photo']['exif'][0]['tag'] == 'Make':
-                make_model = json['photo']['exif'][1]['raw']['_content']
-                return make_model
-        except:
-            pass
-        try:
-            if json['photo']['exif'][1]['tag'] == 'Model':
-                make_model =  json['photo']['exif'][0]['raw']['_content']
-                return make_model
+            for exif in json['photo']['exif']:
+                if exif['label'] == 'Make':
+                    make = exif['raw']['_content']
+                elif exif['label'] == 'Model':
+                    model = exif['raw']['_content']
         except:
             pass
 
-        return "Unknown make"
-
+        return make, model

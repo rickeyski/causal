@@ -8,7 +8,7 @@
             {% if statuses %}
             {% for status in statuses %}
                 <li> {% if status.link_back %}<a href="{{status.link_back}}">{%endif%}
-                    {{status.created|date:"D H:ma"}}
+                    {{status.created|date:"D H:m"}}
                     {% if status.link_back %} </a> {{ status.body}}{%endif%}
     
                 </li>    
@@ -24,7 +24,7 @@
                 {% for link in links %}
                 <li>
                 {% if link.link_back %}<a href="{{link.link_back}}">{%endif%}
-                {{link.created|date:"D H:ma"}} </a>{{link.body}}
+                {{link.created|date:"D H:m"}} </a>{{link.body}}
                 </li>
                 {% endfor %}
             {% else %}
@@ -36,7 +36,7 @@
             <ul>
             {% if details %}               
                 {% for status in details %}
-                    <li>{%if status.link_back %} <a href="{{status.link_back}}"> {{status.created|date:"D H:ma"}}</a>{% endif%}
+                    <li>{%if status.link_back %} <a href="{{status.link_back}}"> {{status.created|date:"D H:m"}}</a>{% endif%}
                         {%if status.liked %} Liked {% endif%} - {{status.body}}
                         <a href="{{status.who_else_liked }}">people who liked this</a>
                     </li>
@@ -50,7 +50,7 @@
             <ul>
             {% if likes %}               
                 {% for status in likes %}
-                    <li>{%if status.link_back %} <a href="{{status.link_back}}"> {{status.created|date:"D H:ma"}}</a>{% endif%}
+                    <li>{%if status.link_back %} <a href="{{status.link_back}}"> {{status.created|date:"D H:m"}}</a>{% endif%}
                         {%if status.liked %} Liked {% endif%} - {{status.body}}
                         <a href="{{status.who_else_liked }}">people who liked this</a>
                     </li>
@@ -65,7 +65,7 @@
             {% if photos %}
                 {%for photo in photos %}
                 <li>
-                {% if photo.link_back %}<a href="{{photo.link_back}}"><h4>Uploaded: {{photo.created|date:"D H:ma"}} </h4>
+                {% if photo.link_back %}<a href="{{photo.link_back}}"><h4>Uploaded: {{photo.created|date:"D H:m"}} </h4>
                     <br/><img src="{{photo.body}}"/> 
                  </a>
                  {%endif%} 
@@ -93,7 +93,7 @@
             <ul>
             {% if checkins %}
                 {%for checkin in checkins %}
-                {% if checkin.link_back %}<a href="{{checkin.link_back}}">{{checkin.created|date:"D H:ma"}}
+                {% if checkin.link_back %}<a href="{{checkin.link_back}}">{{checkin.created|date:"D H:m"}}
                         {%endif%} </a> {{checkin.title}} {{checkin.body}}
                 {% endfor %}
             {% else %}
