@@ -26,32 +26,32 @@ def auth(request):
         username = request.POST['username']
 
         if username:
-            try:
-                user_feed = get_data(
-                    service,
-                    'http://github.com/%s.json' % (username),
-                    disable_oauth=True
-                )
-            except IndexError:
-                user_feed = {'error': True}
+            user_feed = get_data(
+                service,
+                'https://api.github.com/users/%s' % (username),
+                disable_oauth=True
+            )
 
-            # Check the username is valid
-            if not isinstance(user_feed, list) and user_feed.has_key('error'):
+            if user_feed.has_key('message') and user_feed['message'] == "Not Found":
                 messages.error(request,
                                'Unable to validate your username with github, please check your username and retry.')
+                return redirect(settings_redirect(request))
+            
+            if not service.auth:
+                auth_handler = Auth()
             else:
-                user_feed = user_feed[0]
-                if not service.auth:
-                    auth_handler = Auth()
-                else:
-                    auth_handler = service.auth
-                auth_handler.username = username
-                auth_handler.save()
-                if not service.auth:
-                    service.auth = auth_handler
-                service.setup = True
-                service.public = True
-                service.save()
+                auth_handler = service.auth
+
+            auth_handler.username = username
+            auth_handler.save()
+
+            if not service.auth:
+                service.auth = auth_handler
+
+            service.setup = True
+            service.public = True
+            service.save()
+            
         else:
             messages.error(request, 'Please enter a github username')
 
