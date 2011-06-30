@@ -119,6 +119,10 @@ def _get_service_history(service):
         items = service.handler.get_items(day_one)
         if items:
             for item in items:
+                if (getattr(settings, 'ENABLE_PERSONAL_DATA_STORE', False)
+                  and not item.pk):
+                    # Persist service item to DB if personal store is enabled
+                    item.save()
                 if hasattr(item, 'pic_link'):
                     item.body = _add_image_html(item.body)
 
@@ -303,7 +307,7 @@ def sharing_prefs(request):
     else:
         return redirect('user-settings')
 
-def user_feed(request, username):
+def user_feed(request, username, latest=False):
     user = get_object_or_404(User, username=username)
 
     filters = {
@@ -318,18 +322,11 @@ def user_feed(request, username):
 
     data = {}
 
-    # split the request url to check for /user/lastest.json
-    requested_url = request.path.rsplit('/')
-    latest = False
-    if len(requested_url) == 3 and requested_url[2] == 'latest.json':
-        latest = True
-
     for service in services:
-        if service.share:
-            if latest:
-                data[service.handler.display_name] = _get_last_service_update(service)
-            else:
-                data[service.handler.display_name] = _get_service_history(service)
+        if latest:
+            data[service.handler.display_name] = _get_last_service_update(service)
+        else:
+            data[service.handler.display_name] = _get_service_history(service)
 
     return HttpResponse(simplejson.dumps(data))
 
