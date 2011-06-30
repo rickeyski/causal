@@ -262,6 +262,7 @@ class ServiceHandler(OAuthServiceHandler):
                         "http://www.facebook.com/%s/posts/%s?notif_t=feed_comment" % (uid, entry['status_id'])
                     item.service = self.service
                     item.created = created
+                    item.external_service_id = u"status_%s" % (entry['status_id'],)
                     items.append(item)
 
         return items
@@ -295,6 +296,7 @@ class ServiceHandler(OAuthServiceHandler):
                 item.body = entry['category']
                 item.link_back = info_on_like['link']
                 item.service = self.service
+                item.external_service_id = u"like_%s" % (entry['id'],)
                 items.append(item)
                 
         return items
