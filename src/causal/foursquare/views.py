@@ -3,12 +3,13 @@ full blown oauth to access the user's details.
 """
 
 from causal.main.decorators import can_view_service
-from causal.main.models import UserService, RequestToken, ServiceApp, OAuth
+from causal.main.models import UserService, RequestToken, ServiceApp, OAuth, AccessToken
 from causal.main.utils.services import get_model_instance, user_login, \
-     generate_access_token, settings_redirect, check_is_service_id
+     settings_redirect, check_is_service_id, get_url
 from causal.main.utils.views import render
 from datetime import date, timedelta
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 
@@ -20,15 +21,29 @@ def verify_auth(request):
     """
 
     service = get_model_instance(request.user, PACKAGE)
-    request_token = service.auth.request_token
-    request_token.oauth_verify = request.GET.get('oauth_verifier')
-    request_token.save()
+    code = request.GET.get('code')
 
-    generate_access_token(service, "http://foursquare.com/oauth/access_token")
-    service.setup = True
-    service.public = True
-    service.save()
+    url = "https://foursquare.com/oauth2/access_token?client_id=%s&client_secret=%s&grant_type=authorization_code&redirect_uri=%s&code=%s" % (service.app.auth_settings['consumer_key'], service.app.auth_settings['consumer_secret'], service.app.auth_settings['return_url'], code)
+    
+    access_token = get_url(url)
 
+    if access_token.has_key('error'):
+        messages.error(request, 'Unable to validate your with Foursquare, please wait a few minutes and retry.')
+    else:
+        at = AccessToken.objects.create(
+                oauth_token = access_token["access_token"],
+                oauth_token_secret = '',
+                oauth_verify = ''
+            )
+    
+        service.auth.access_token = at
+        service.auth.save()
+        
+        service.setup = True
+        service.public = True
+        service.save()
+        
+        
     return redirect(settings_redirect(request))
 
 @login_required(redirect_field_name='redirect_to')
@@ -45,7 +60,10 @@ def auth(request):
         auth_handler.save()
         service.auth = auth_handler
         service.save()
-    return user_login(service, "http://foursquare.com/oauth/request_token", "http://foursquare.com/oauth/authorize")
+        
+    url = "https://foursquare.com/oauth2/authenticate?client_id=%s&response_type=code&redirect_uri=%s" % (service.app.auth_settings['consumer_key'], service.app.auth_settings['return_url'])
+    
+    return redirect(url)
 
 @can_view_service
 def stats(request, service_id):

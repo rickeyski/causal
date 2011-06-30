@@ -138,7 +138,7 @@ class ServiceHandler(BaseServiceHandler):
                        gig.has_key('startDate'):
                         item.venue_name = gig['venue']['name']
                         item.event_url = gig['url']
-                        item.date = gig['startDate']
+                        item.date = datetime.strptime(gig['startDate'], '%a, %d %b %Y %H:%M:%S')
 
                         if gig['venue'].has_key('location') and \
                            gig['venue']['location'].has_key('geo:point'):

@@ -1,6 +1,7 @@
 include *.txt
 include LICENSE
 include VERSION
+include CHANGELOG
 global-exclude pip-log.txt
 graft src/causal/static
 recursive-include src/causal *.html

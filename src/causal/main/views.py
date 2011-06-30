@@ -24,9 +24,17 @@ ENABLE_PERSONAL_DATA_STORE = getattr(
 )
 
 def history(request, username):
+    """Main method for fetching a users updates."""
+    
     template_values = {}
 
-    user = get_object_or_404(User, username=username)
+    user_list = User.objects.filter(username=username)
+    
+    if user_list:
+        user = user_list[0]
+    else:
+        return redirect('home')
+        
     template_values['viewing_user'] = user
 
     filters = {
@@ -247,7 +255,14 @@ def user_settings(request):
 @login_required
 def enable_service(request, app_id):
     """Edit access to various services"""
-    app = get_object_or_404(ServiceApp, pk=app_id)
+
+    app_list = ServiceApp.objects.filter(pk=app_id)
+    
+    if app_list:
+        app = app_list[0]
+    else:
+        return redirect('home')
+    
     service = UserService.objects.get_or_create(user=request.user, app=app)[0]
 
     if service.handler.requires_enabling:
@@ -332,13 +347,19 @@ def user_feed(request, username, latest=False):
 
 def current_status(request, username):
     """Return the last update from all enabled services for a user."""
-    user = get_object_or_404(User, username=username)
+    user_list = User.objects.filter(username=username)
+    
+    if user_list:
+        user = user_list[0]
+    else:
+        return redirect('home')
 
     filters = {
         'user': user,
         'setup': True,
         'app__enable': True
     }
+    
     if not request.user.is_authenticated() or not request.user.pk == user.pk:
         filters['share'] = True
 
