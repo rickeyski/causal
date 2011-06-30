@@ -8,7 +8,6 @@
             <ul>
                 <li>Total uploads this week: {{number_of_pictures_uploaded}}</li>
                 <li>
-                https://chart.googleapis.com/chart?chd=t:{% for datetime, count in days_taken.items %}{{count}}{% if not forloop.last %},{% endif%}{%endfor%}&chco=A2C180&chs=750x200&chxt=x,y&chm=B,A2C180,0,-1,6&chds=0,11&chxl=0%3A{% for datetime, count in days_taken.items %}|{{datetime|date:"D"}}{% endfor %}|1%3A|0|1|2|3|4|5|6|7|8|9|10|11&cht=lc
                 <img src="http://chart.apis.google.com/chart?chxr=1,0,{{max_taken_on_a_day}}&chxt=x,y&chxl=0:{% for datetime, count in days_taken.items %}|{{datetime|date:"D"}}{% endfor %}&chbh=a&chs=300x225&cht=bvg&chco=A2C180&chds=0,{{max_taken_on_a_day}}&chd=t:{% for datetime, count in days_taken.items %}{{count}}{% if not forloop.last %},{% endif%}{%endfor%}"/></li>
         
                 {% if most_commented_picture.body %}
