@@ -1,12 +1,13 @@
 """This module goes and fetches updates from http://last.fm. We
 access public json feeds and convert it to our ServiceItem format."""
 
+from datetime import datetime
+from time import time, mktime
+from django.utils.encoding import smart_str
 from causal.main.handlers import BaseServiceHandler
 from causal.main.models import ServiceItem
 from causal.main.utils.services import get_data
 from causal.main.exceptions import LoggedServiceError
-from datetime import datetime
-from time import time, mktime
 
 try:
     import hashlib
@@ -69,8 +70,8 @@ class ServiceHandler(BaseServiceHandler):
 
                     # Generate a unique ID for this item
                     hash.update("%s_%s" % (
-                        track['name'],
-                        entry['date']['#text'],
+                        smart_str(track['name']),
+                        smart_str(track['date']['#text']),
                     ))
                     item.external_service_id = hash.digest()
 
