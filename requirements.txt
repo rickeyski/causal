@@ -5,3 +5,4 @@ django-registration==0.7
 python-dateutil<2.0
 pytz
 http://dist.pinaxproject.com/dev/django-timezones/django-timezones-0.2.dev2.tar.gz#django-timezones==0.2.dev2
+httplib2>=0.7
