@@ -30,6 +30,7 @@ class ServiceHandler(BaseServiceHandler):
                 item = ServiceItem()
 
                 item.title = pic_json['photo']['title']['_content']
+                item.body = pic_json['photo']['description']['_content']
                 # Use date from when the photo was uploaded to flickr NOT when it was taken
                 item.created = datetime.fromtimestamp(float(pic_json['photo']['dates']['posted'])) #u'posted': u'1300054696'
 
@@ -130,6 +131,7 @@ class ServiceHandler(BaseServiceHandler):
                 exif_json = simplejson.loads(exif)
                 item.camera_make, item.camera_model = self._extract_camera_type(exif_json)
                 item.title = pic_json['photo']['title']['_content']
+                item.body = pic_json['photo']['description']['_content']
 
                 # Use date from when the photo was uploaded to flickr NOT when it was taken
                 item.created = datetime.fromtimestamp(float(pic_json['photo']['dates']['posted'])) #u'posted': u'1300054696'
