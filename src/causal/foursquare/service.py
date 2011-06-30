@@ -5,6 +5,7 @@ from causal.main.handlers import OAuthServiceHandler
 from causal.main.models import ServiceItem
 from causal.main.utils.services import get_model_instance, get_data, get_url
 from causal.main.exceptions import LoggedServiceError
+from django.contrib import messages
 from django.shortcuts import render_to_response, redirect
 from datetime import datetime
 
@@ -19,6 +20,7 @@ class ServiceHandler(OAuthServiceHandler):
             url = "https://api.foursquare.com/v2/users/self/checkins?oauth_token=%s" % (self.service.auth.access_token.oauth_token)
             checkins = get_url(url)
         except Exception, e:
+            messages.error(request, "Unable to to contact Foursquare's servers, please wait a few minutes and retry or check http://status.foursquare.com.")
             raise LoggedServiceError(original_exception=e)
 
         return self._convert_feed(checkins, since)

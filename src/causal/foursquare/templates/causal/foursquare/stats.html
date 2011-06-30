@@ -7,8 +7,8 @@
             <ul>
             {% if checkins %}
                 {% for checkin in checkins %}
-                    <li>{%if checkin.link_back %} <a href="{{checkin.link_back}}"> {{checkin.created|date:"D H:ma"}}</a>{% endif%} {{checkin.title}} - {{checkin.body}} 
-                    {%if checkin.icon %} <img src="{{checkin.icon}}" /> {% endif %} 
+                    <li>{%if checkin.link_back %} <a href="{{checkin.link_back}}"> {{checkin.created|date:"D H:m"}}</a>{% endif%} {%if checkin.icon %} <img src="{{checkin.icon}}" /> {% endif %}  {{checkin.title}} - {{checkin.body}} 
+                    
                     {%if checkin.is_mayor %} You are the mayor! {% endif %}</li>
                 {% endfor %}
             {% else %}

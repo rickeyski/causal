@@ -22,10 +22,10 @@
         {% for artist in favourite_artists %}
             {% if artist.gigs %}
             <li>
-                <h3>{{artist.name}}</h3>
+                <h3>{{artist.name}}</h3>	
 	        <ol>
                 {% for gig in artist.gigs %}
-	        <li>{{gig.date}} at <a href="{{gig.event_url}}">{{gig.venue_name}}</a></li>
+	        <li>{{gig.date|date:"D, M Y H:m"}} at <a href="{{gig.event_url}}">{{gig.venue_name}}</a></li>
                 {% endfor %}
 	        </ol>
             </li>
