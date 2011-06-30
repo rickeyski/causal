@@ -7,6 +7,8 @@
             <h3>Uploads</h3>
             <ul>
                 <li>Total uploads this week: {{number_of_pictures_uploaded}}</li>
+                <li>
+                <img src="http://chart.apis.google.com/chart?chxr=1,0,{{max_taken_on_a_day}}&chxt=x,y&chxl=0:{% for datetime, count in days_taken.items %}|{{datetime|date:"D"}}{% endfor %}&chbh=a&chs=300x225&cht=bvg&chco=A2C180&chds=0,{{max_taken_on_a_day}}&chd=t:{% for datetime, count in days_taken.items %}{{count}}{% if not forloop.last %},{% endif%}{%endfor%}"/></li>
         
                 {% if most_commented_picture.body %}
                 <li>Most commented picture: </br><a href="{{most_commented_picture.link_back}}"><img src="{{most_commented_picture.url_small}}"/> </a> </li>
@@ -14,10 +16,13 @@
         
             </ul>
             
-            <h3>Camera Usage</h3>
+            <h3>Cameras Used</h3>
             <ul>
                 {% for cam, count in cameras_used.items %}
-                <li>{{cam}} : {{count}} {%if count == 1 %} pic {%else%}pics{%endif%}</li>
+                <li>{% if forloop.first %}Your most used camera was a <b>{{cam}}</b> with a total of {{count}} upload{%if count != 1 %}s{%endif%}.
+                {% else %}
+                    {{cam}} took {{count}} pictures{%if count == 1 %}s{%endif%}
+                {% endif%} </li>
                 {% endfor %}
             </ul>
         
@@ -26,12 +31,15 @@
             {% for pic in pictures %}
             <li>
                  <a href="{{pic.link_back}}"><img src="{{pic.url_small}}"/></a> </br>
-                 Tags: 
+                 Tags: {% if pic.tags %}
                  {% for tag in pic.tags %}
                      {{tag.raw}}{% if not forloop.last %},{% endif%}
                  {% endfor %}
+                 {% else %}
+                 None
+                 {% endif %}
                  </br>
-                 Camera: {{pic.camera_make}}
+                 Camera: {{pic.camera_make}} - {{pic.camera_model}}
             </li>
            {% endfor %}
            </ul>

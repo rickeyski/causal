@@ -26,7 +26,7 @@ class ServiceHandler(BaseServiceHandler):
     def _get_feed(self):
         feed = get_data(
             self.service,
-            'http://github.com/%s.json' % (self.service.auth.username,),
+            'https://github.com/%s.json' % (self.service.auth.username,),
             disable_oauth=True
         )
         return feed
@@ -79,6 +79,20 @@ class ServiceHandler(BaseServiceHandler):
 
         return converted_date
 
+    def _convert_commit_date(self, commit):
+        """Convert the date given in a commit api call."""
+        
+        if commit and commit.has_key('author') and commit['author'].has_key('date'):
+            
+            date, time_and_offset = commit['author']['date'].rsplit('T')
+            time, offset = time_and_offset.rsplit('-')
+
+            time_offset = timedelta(hours=int(offset[:2]))
+
+            converted_date = datetime.strptime(date + ' ' + time, '%Y-%m-%d %H:%M:%S') + time_offset
+
+        return converted_date    
+        
     def _convert_stats_feed(self, feed, since):
         """Take the user's atom feed.
         """
@@ -87,7 +101,7 @@ class ServiceHandler(BaseServiceHandler):
         avatar = ""
 
         if feed and feed[0]['actor_attributes'].has_key('gravatar_id'):
-                avatar = 'http://www.gravatar.com/avatar/%s' % (feed[0]['actor_attributes']['gravatar_id'],)
+            avatar = 'http://www.gravatar.com/avatar/%s' % (feed[0]['actor_attributes']['gravatar_id'],)
 
         commit_times = {}
 
@@ -97,19 +111,38 @@ class ServiceHandler(BaseServiceHandler):
                 created = self._convert_date(entry)
 
                 if created.date() > since:
-                    hour = created.strftime('%H')
-                    if commit_times.has_key(hour):
-                        commit_times[hour] += + 1
-                    else:
-                        commit_times[hour] = 1
 
-                    item = ServiceItem()
-                    self._set_title_body(entry, item)
-                    item.created = created
-                    if entry.has_key('url'):
-                        item.link_back = entry['url']
-                    item.service = self.service
-                    items.append(item)
+                    # extract commits from push event
+                    if entry['type'] == 'PushEvent':
+                        
+                        # fetch and get the stats on commits
+                        for commit in entry['payload']['shas']:
+                            url = "https://api.github.com/repos/%s/%s/git/commits/%s" % (self.service.auth.username, entry['repository']['name'], commit[0])
+                            commit_detail = get_data(self.service, url, disable_oauth=True)
+                            item = ServiceItem()
+                            item.title = "Commit for %s" % (entry['repository']['name'])
+                            item.body = '"%s"' % (commit_detail['message']) 
+                            item.created = self._convert_commit_date(commit_detail)
+                            
+                            if commit_detail.has_key('url'):
+                                item.link_back = commit_detail['url']
+
+                            item.service = self.service
+                            items.append(item)
+                        
+                            hour = created.strftime('%H')
+                            if commit_times.has_key(hour):
+                                commit_times[hour] += + 1
+                            else:
+                                commit_times[hour] = 1
+                    else:
+                        item = ServiceItem()
+                        self._set_title_body(entry, item)
+                        item.created = created
+                        if entry.has_key('url'):
+                            item.link_back = entry['url']
+                        item.service = self.service
+                        items.append(item)
 
         commit_times = SortedDict(sorted(
             commit_times.items(),
@@ -119,6 +152,9 @@ class ServiceHandler(BaseServiceHandler):
 
         return items, avatar, commit_times, self._most_common_commit_time(commit_times)
 
+    def _create_service_item(self, entry):
+        """Create a service item from github's format"""
+    
     def _most_common_commit_time(self, commits):
         """Take a list of commit times and return the most common time
         of commits."""
@@ -140,7 +176,10 @@ class ServiceHandler(BaseServiceHandler):
         
         try:
             if entry['type'] == 'CreateEvent':
-                item.title = "Created branch %s from %s" % (entry['payload']['object_name'],entry['payload']['name'])
+                if entry['payload'].has_key('object_name'):
+                    item.title = "Created branch %s from %s" % (entry['payload']['object_name'], entry['payload']['name'])
+                else:
+                    item.title = "Created branch %s from %s" % (entry['payload']['master_branch'], entry['repository']['name'])                
             elif entry['type'] == 'GistEvent':
                 item.title = "Created gist %s" % (entry['payload']['desc'])
             elif entry['type'] == 'IssuesEvent':
@@ -148,7 +187,7 @@ class ServiceHandler(BaseServiceHandler):
             elif entry['type'] == 'ForkEvent':
                 item.title = "Repo %s forked." % (entry['repository']['name'])
             elif entry['type'] == 'PushEvent':
-                item.title = "Pushed to repo %s with comment %s." % (entry['repository']['name'], entry['payload']['shas'][0][2])
+                item.title = "Pushed to repo %s with comment \"%s\"." % (entry['repository']['name'], entry['payload']['shas'][0][2])
             elif entry['type'] == 'CreateEvent':
                 item.title = "Branch %s for %s." % (entry['payload']['object_name'], entry['payload']['name'])
             elif entry['type'] == 'WatchEvent':
@@ -163,6 +202,8 @@ class ServiceHandler(BaseServiceHandler):
                 pass
             elif entry['type'] == 'IssueCommentEvent':
                 item.title = "Commented on issue with id of %s" % (entry['payload']['issue_id'])
+            elif entry['type'] == 'PullRequestEvent':
+                item.title = "Created pull for %s" % (entry['repository']['name'])
             else:
                 item.title = "Unknown Event!"
                 

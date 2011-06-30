@@ -11,9 +11,11 @@ from causal.main.models import RequestToken, AccessToken, UserService, OAuth
 def user_login(service, rt_url, auth_url, cust_callback_url=None):
     """Authenticates to an OAuth service.
     """
+
     current_site = Site.objects.get(id=settings.SITE_ID)
     callback = cust_callback_url or reverse(service.app.module_name.replace('.', '-'))
     callback = "http://%s%s" % (current_site.domain, callback,)
+
     try:
         consumer = oauth.Consumer(
             service.app.auth_settings['consumer_key'],
@@ -63,6 +65,7 @@ def generate_access_token(service, token_url):
     """Takes a request_token and validates it to give a valid AccessToken
     and the stores it. Should an existing token exist it will be deleted.
     """
+    
     consumer = oauth.Consumer(service.app.auth_settings['consumer_key'], service.app.auth_settings['consumer_secret'])
     request_token = service.auth.request_token
 
@@ -82,13 +85,25 @@ def generate_access_token(service, token_url):
     service.auth.access_token = at
     service.auth.save()
 
+    
+    
+def get_url(url):
+    """Helper function for retrieving JSON data from a web service.
+    """
+
+    h = httplib2.Http()
+    resp, content = h.request(url, "GET")
+    
+    return simplejson.loads(content)
+    
+    
 def get_data(service, url, disable_oauth=False):
     """Helper function for retrieving JSON data from a web service, with
     optional OAuth authentication.
     """
 
     if disable_oauth:
-        h = httplib2.Http()
+        h = httplib2.Http(disable_ssl_certificate_validation=True)
         resp, content = h.request(url, "GET")
     else:
         auth_settings = get_config(service.app.module_name, 'auth')
@@ -138,3 +153,8 @@ def get_config(module_name, config_name=None):
         return app_settings.get(config_name, None)
     else:
         return app_settings
+
+def simple_oauth2(url):
+    """Handle the simpler OAuth2 authenication"""
+    
+    get_data(url)
