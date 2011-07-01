@@ -2,13 +2,16 @@
 feed from flickr.com.
 """
 
+import time
+import flickrapi
+from django.utils import simplejson
+from django.conf import settings
 from causal.main.handlers import BaseServiceHandler
 from causal.main.models import ServiceItem
 from causal.main.exceptions import LoggedServiceError
 from datetime import datetime, timedelta
-from django.utils import simplejson
-import flickrapi
-import time
+
+ENABLE_PERSONAL_DATA_STORE = getattr(settings, 'ENABLE_PERSONAL_DATA_STORE', False)
 
 class ServiceHandler(BaseServiceHandler):
     display_name = 'Flickr'
@@ -53,7 +56,8 @@ class ServiceHandler(BaseServiceHandler):
 
                 item.body = '<br/><img src="%s" />' % (item.url_thumb,)
                 item.service = self.service
-                item.external_service_id = pic_json['photo']['id']
+                if ENABLE_PERSONAL_DATA_STORE:
+                    item.external_service_id = pic_json['photo']['id']
 
                 items.append(item)
         return items

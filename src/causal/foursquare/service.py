@@ -1,13 +1,15 @@
 import httplib2
 import oauth2 as oauth
 from datetime import datetime, timedelta
+from django.contrib import messages
+from django.shortcuts import render_to_response, redirect
+from django.conf import settings
 from causal.main.handlers import OAuthServiceHandler
 from causal.main.models import ServiceItem
 from causal.main.utils.services import get_model_instance, get_data, get_url
 from causal.main.exceptions import LoggedServiceError
-from django.contrib import messages
-from django.shortcuts import render_to_response, redirect
-from datetime import datetime
+
+ENABLE_PERSONAL_DATA_STORE = getattr(settings, 'ENABLE_PERSONAL_DATA_STORE', False)
 
 class ServiceHandler(OAuthServiceHandler):
     display_name = 'Foursquare'
@@ -64,5 +66,7 @@ class ServiceHandler(OAuthServiceHandler):
                     if checkin['venue'].has_key('categories') and len(checkin['venue']['categories']) > 0:
                         item.icon = checkin['venue']['categories'][0]['icon']
 
+                    if ENABLE_PERSONAL_DATA_STORE:
+                        item.external_service_id = checkin['id']
                     items.append(item)
         return items

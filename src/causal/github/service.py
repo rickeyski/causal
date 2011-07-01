@@ -3,11 +3,12 @@ import feedparser
 from dateutil import parser
 from datetime import datetime, timedelta
 from BeautifulSoup import Tag, SoupStrainer, BeautifulSoup as soup
+from django.utils.datastructures import SortedDict
+from django.conf import settings
 from causal.main.handlers import BaseServiceHandler
 from causal.main.models import ServiceItem
 from causal.main.utils.services import get_data
 from causal.main.exceptions import LoggedServiceError
-from django.utils.datastructures import SortedDict
 
 try:
     import hashlib
@@ -16,6 +17,8 @@ except ImportError:
     # for Python < 2.5
     import md5
     hash = md5.new()
+
+ENABLE_PERSONAL_DATA_STORE = getattr(settings, 'ENABLE_PERSONAL_DATA_STORE', False)
 
 KEEP_TAGS = ('a', 'span', 'code',)
 
@@ -65,14 +68,15 @@ class ServiceHandler(BaseServiceHandler):
                             item.link_back = entry['url']
                     item.service = self.service
 
-                    # Generate a unique ID for this item
-                    hash.update("%s_%s/%s:%s" % (
-                        entry['type'],
-                        entry['created_at'],
-                        entry['actor'],
-                        entry['url']
-                    ))
-                    item.external_service_id = hash.digest()
+                    if ENABLE_PERSONAL_DATA_STORE:
+                        # Generate a unique ID for this item
+                        hash.update("%s_%s/%s:%s" % (
+                            entry['type'],
+                            entry['created_at'],
+                            entry['actor'],
+                            entry['url']
+                        ))
+                        item.external_service_id = hash.digest()
                     items.append(item)
 
         return items

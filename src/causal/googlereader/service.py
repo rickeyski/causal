@@ -2,11 +2,13 @@ import time
 import feedparser
 from dateutil import parser
 from datetime import datetime
+from urlparse import urlparse
+from django.conf import settings
 from causal.main.handlers import BaseServiceHandler
 from causal.main.models import ServiceItem
 from causal.main.exceptions import LoggedServiceError
-from urlparse import urlparse
 
+ENABLE_PERSONAL_DATA_STORE = getattr(settings, 'ENABLE_PERSONAL_DATA_STORE', False)
 
 class ServiceHandler(BaseServiceHandler):
     display_name = 'Google Reader'
@@ -43,8 +45,9 @@ class ServiceHandler(BaseServiceHandler):
                     # Person making comment
                     item.author = entry.author
 
-                    # Unique ID
-                    item.external_service_id = entry['id']
+                    if ENABLE_PERSONAL_DATA_STORE:
+                        # Unique ID
+                        item.external_service_id = entry['id']
                     items.append(item)
         except Exception, e:
             raise LoggedServiceError(original_exception=e)

@@ -1,13 +1,16 @@
 """Does all the fetching from twitter using a oauth token."""
 __version__ = '1.0.0'
 
+import re
+from twitter_text import TwitterText
+from tweepy import TweepError
+from django.conf import settings
 from causal.main.handlers import OAuthServiceHandler
 from causal.main.exceptions import LoggedServiceError
 from causal.main.models import ServiceItem
 from causal.twitter.utils import get_api
-from twitter_text import TwitterText
-from tweepy import TweepError
-import re
+
+ENABLE_PERSONAL_DATA_STORE = getattr(settings, 'ENABLE_PERSONAL_DATA_STORE', False)
 
 class ServiceHandler(OAuthServiceHandler):
     display_name = 'Twitter'
@@ -59,7 +62,8 @@ class ServiceHandler(OAuthServiceHandler):
                     item.location['lat'] = status.geo['coordinates'][0]
                     item.location['long'] = status.geo['coordinates'][1]
                 item.service = self.service
-                item.external_service_id = status.id_str
+                if ENABLE_PERSONAL_DATA_STORE:
+                    item.external_service_id = status.id_str
                 items.append(item)
 
         return items

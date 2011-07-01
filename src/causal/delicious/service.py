@@ -2,14 +2,15 @@
 feed from delicious.com.
 """
 
+from dateutil import parser
+from datetime import datetime, timedelta
+from django.shortcuts import render_to_response, redirect
+from django.utils import simplejson
+from django.conf import settings
 from causal.main.handlers import BaseServiceHandler
 from causal.main.models import ServiceItem
 from causal.main.utils.services import get_data
 from causal.main.exceptions import LoggedServiceError
-from django.shortcuts import render_to_response, redirect
-from dateutil import parser
-from datetime import datetime, timedelta
-from django.utils import simplejson
 
 try:
     import hashlib
@@ -18,6 +19,8 @@ except ImportError:
     # for Python < 2.5
     import md5
     hash = md5.new()
+
+ENABLE_PERSONAL_DATA_STORE = getattr(settings, 'ENABLE_PERSONAL_DATA_STORE', False)
 
 class ServiceHandler(BaseServiceHandler):
     display_name = 'Delicious'
@@ -57,12 +60,13 @@ class ServiceHandler(BaseServiceHandler):
                         item.tags = entry['t']
                         item.service = self.service
 
-                        # Generate a unique ID for this item
-                        hash.update("%s:%s" % (
-                            entry['u'],
-                            entry['dt'],
-                        ))
-                        item.external_service_id = hash.digest()
+                        if ENABLE_PERSONAL_DATA_STORE:
+                            # Generate a unique ID for this item
+                            hash.update("%s:%s" % (
+                                entry['u'],
+                                entry['dt'],
+                            ))
+                            item.external_service_id = hash.digest()
                         items.append(item)
                     except:
                         pass

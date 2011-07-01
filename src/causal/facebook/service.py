@@ -2,30 +2,33 @@
 We use FQL to fetch results from Facebook.
 """
 
+import time
+import httplib2
+from datetime import datetime
+from django.shortcuts import redirect
+from django.utils import simplejson
+from django.conf import settings
+from facegraph.fql import FQL
 from causal.main.handlers import OAuthServiceHandler
 from causal.main.exceptions import LoggedServiceError
 from causal.main.models import ServiceItem, AccessToken
 from causal.main.utils.services import get_model_instance, get_data
-from datetime import datetime
-from django.shortcuts import redirect
-from django.utils import simplejson
-from facegraph.fql import FQL
-import httplib2
-import time
 
-# fetch all statuses for a user
+ENABLE_PERSONAL_DATA_STORE = getattr(settings, 'ENABLE_PERSONAL_DATA_STORE', False)
+
+# Fetch all statuses for a user
 STATUS_FQL = """SELECT uid,status_id,message,time FROM status WHERE uid = me() AND time > %s"""
 
-# links posted
+# Links posted
 LINKED_FQL = """SELECT owner_comment,created_time,title,summary,url FROM link WHERE owner=me() AND created_time > %s"""
 
-# users stream needs fixing
+# Users stream needs fixing
 STREAM_FQL = """SELECT likes,message,created_time,comments,permalink,privacy,source_id FROM stream WHERE filter_key IN (SELECT filter_key FROM stream_filter WHERE uid = me() AND type="newsfeed") AND created_time > %s"""
 
-# fetch username
+# Fetch username
 USER_NAME_FETCH = """SELECT name, pic_small FROM user WHERE uid=%s"""
 
-# fetch uid
+# Fetch uid
 USER_ID = """SELECT uid FROM user WHERE uid = me()"""
 
 class ServiceHandler(OAuthServiceHandler):
@@ -262,7 +265,8 @@ class ServiceHandler(OAuthServiceHandler):
                         "http://www.facebook.com/%s/posts/%s?notif_t=feed_comment" % (uid, entry['status_id'])
                     item.service = self.service
                     item.created = created
-                    item.external_service_id = u"status_%s" % (entry['status_id'],)
+                    if ENABLE_PERSONAL_DATA_STORE:
+                        item.external_service_id = u"status_%s" % (entry['status_id'],)
                     items.append(item)
 
         return items
@@ -296,7 +300,8 @@ class ServiceHandler(OAuthServiceHandler):
                 item.body = entry['category']
                 item.link_back = info_on_like['link']
                 item.service = self.service
-                item.external_service_id = u"like_%s" % (entry['id'],)
+                if ENABLE_PERSONAL_DATA_STORE:
+                    item.external_service_id = u"like_%s" % (entry['id'],)
                 items.append(item)
                 
         return items
