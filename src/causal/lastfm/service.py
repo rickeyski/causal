@@ -21,15 +21,15 @@ class ServiceHandler(BaseServiceHandler):
 
         try:
             t = datetime.now()
-            tracks_listing = get_data(
-                self.service,
-                'http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=%s&api_key=%s&format=json&from=%s&to=%s&limit=%s' % (
+            url = 'http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=%s&api_key=%s&format=json&from=%s&to=%s&limit=%s' % (
                     self.service.auth.username,
                     self.service.app.auth_settings['api_key'],
                     str(int(mktime(since.timetuple()))),
                     str(int(mktime(t.timetuple()))),
-                    MAX_RESULTS
-                ),
+                    MAX_RESULTS)
+            tracks_listing = get_data(
+                self.service,
+                url,
                 disable_oauth=True
             )
         except Exception, exception:
@@ -37,6 +37,10 @@ class ServiceHandler(BaseServiceHandler):
 
         return self._convert_recent_tracks_json(tracks_listing)
 
+    def get_stats_items(self, since):
+        """Stubbed out for now"""
+        return self.get_items(since)    
+    
     def _convert_recent_tracks_json(self, json):
         """Convert the json returned from getrecenttrack into ServiceItems.
         """

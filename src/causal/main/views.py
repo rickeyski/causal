@@ -77,15 +77,28 @@ def _get_last_service_update(service):
     }
 
     try:
-        items = service.handler.get_items(day_one)
-        if items:
-            item = items[0]
+        items = service.handler.get_stats_items(day_one)
+        if items and items[0]:
+            if isinstance(items[0], ServiceItem):
+                item = items[0]
+            else:
+                item = items[0][0]
             if hasattr(item, 'pic_link'):
                 item.body = _add_image_html(item.body)
 
+            if not hasattr(item, 'title'):
+                title = ''
+            else:
+                title = item.title
+                
+            if not hasattr(item, 'body'):
+                body = ''
+            else:
+                body = item.body
+                
             item_dict = {
-                'title': item.title,
-                'body': urlize(item.body),
+                'title': title,
+                'body': urlize(body),
                 'created': mktime(item.created_local.timetuple()),
                 'created_date': item.created_local.strftime("%I:%M%p").lower(),
                 'location': item.location,
@@ -393,6 +406,7 @@ def current_status(request, username):
         'causal/now.html',
         {
             'connections': connections,
+            'total': len(connections),
         },
         context_instance=RequestContext(request)
     )
