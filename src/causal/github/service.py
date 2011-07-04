@@ -47,7 +47,7 @@ class ServiceHandler(BaseServiceHandler):
             if entry.has_key('public') and entry['public']:
                 created = self._convert_date(entry)
 
-                if created.date() > since:
+                if created.date() >= since:
                     item = ServiceItem()
                     self._set_title_body(entry, item)
                     item.created = created
@@ -110,7 +110,7 @@ class ServiceHandler(BaseServiceHandler):
                 date, time, offset = entry['created_at'].rsplit(' ')
                 created = self._convert_date(entry)
 
-                if created.date() > since:
+                if created.date() >= since:
 
                     # extract commits from push event
                     if entry['type'] == 'PushEvent':

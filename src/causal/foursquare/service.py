@@ -25,6 +25,10 @@ class ServiceHandler(OAuthServiceHandler):
 
         return self._convert_feed(checkins, since)
 
+    def get_stats_items(self, since):
+        """Stubbed out for now"""
+        return self.get_items(since)    
+    
     def _convert_feed(self, json, since):
         """Take the raw json from the feed and convert it to ServiceItems.
         """
