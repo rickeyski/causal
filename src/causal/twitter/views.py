@@ -54,7 +54,9 @@ def auth(request):
 @can_view_service
 def stats(request, service_id):
     """Create up some stats."""
+    
     service = get_object_or_404(UserService, pk=service_id)
+
     if check_is_service_id(service, PACKAGE):
         # get tweets
         tweets = service.handler.get_items(date.today() - timedelta(days=7))
@@ -66,7 +68,15 @@ def stats(request, service_id):
         ats = {}
 
         # to store a break down of tweets per day
-        days = {}
+        day = timedelta(days=1)
+        
+        start_day = (date.today() - timedelta(days=7))
+        
+        template_values['days_tweeted'] = {start_day : 0}
+        for i in range(0,7):
+            start_day = start_day + day
+            template_values['days_tweeted'][start_day] = 0
+            
         if tweets:
             for tweet in tweets:
                 if tweet.has_location():
@@ -80,29 +90,25 @@ def stats(request, service_id):
                             ats[i] = ats[i] + 1
                         else:
                             ats[i] = 1
-
-                if days.has_key(tweet.created.strftime('%d')):
-                    days[tweet.created.strftime('%d')] = \
-                        days[tweet.created.strftime('%d')] + 1
-                else:
-                    days[tweet.created.strftime('%d')] = 1
+    
+                if template_values['days_tweeted'].has_key(tweet.created.date()):
+                    template_values['days_tweeted'][tweet.created.date()] = \
+                               template_values['days_tweeted'][tweet.created.date()] + 1
 
             template_values['retweets'] = retweets
             template_values['non_retweets'] = len(tweets) - retweets
             template_values['total_tweets'] = len(tweets)
             template_values['tweets'] = tweets
-            template_values['tweets_per_day'] = \
-                           sorted(days.iteritems(), key=lambda (k, v) : (v, k))
-            template_values['max_tweets_per_day'] = \
-                           template_values['tweets_per_day'][-1][1]
-
-            days = {}
-
-            # tweets per day
 
             # order by value and reverse to put most popular at the top
             template_values['atters'] = SortedDict(
                 sorted(ats.items(), reverse=True, key=lambda x: x[1]))
+            
+            template_values['days_tweeted'] = SortedDict(sorted(template_values['days_tweeted'].items(), reverse=False, key=lambda x: x[0]))
+            
+            max_tweeted_on_a_day = SortedDict(sorted(template_values['days_tweeted'].items(), reverse=True, key=lambda x: x[1]))
+            template_values['max_tweeted_on_a_day'] = max_tweeted_on_a_day[max_tweeted_on_a_day.keyOrder[0]]
+            
         return render(
             request,
             template_values,
