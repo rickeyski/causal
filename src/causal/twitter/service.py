@@ -41,7 +41,7 @@ class ServiceHandler(OAuthServiceHandler):
 
         for status in feed:
             # We are interested in tweets since
-            if status.created_at.date() > since:
+            if status.created_at.date() >= since:
                 item = ServiceItem()
                 twitter_text = TwitterText(status.text)
                 twitter_text.autolink.auto_link_usernames_or_lists()
