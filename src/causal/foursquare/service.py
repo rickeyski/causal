@@ -8,6 +8,7 @@ from causal.main.exceptions import LoggedServiceError
 from django.contrib import messages
 from django.shortcuts import render_to_response, redirect
 from datetime import datetime
+from django.utils.datastructures import SortedDict
 
 class ServiceHandler(OAuthServiceHandler):
     display_name = 'Foursquare'
@@ -27,7 +28,21 @@ class ServiceHandler(OAuthServiceHandler):
 
     def get_stats_items(self, since):
         """Stubbed out for now"""
-        return self.get_items(since)    
+
+        checkins = self.get_items(since)
+
+        categories = {}
+        
+        for checkin in checkins:
+            if hasattr(checkin, 'categories'):
+                if categories.has_key(checkin.categories[0]['name']):
+                    categories[checkin.categories[0]['name']] += 1
+                else:
+                    categories[checkin.categories[0]['name']] = 1
+                    
+        categories = SortedDict(sorted(categories.items(), reverse=True, key=lambda x: x[1]))
+                    
+        return checkins, categories
     
     def _convert_feed(self, json, since):
         """Take the raw json from the feed and convert it to ServiceItems.
@@ -68,6 +83,7 @@ class ServiceHandler(OAuthServiceHandler):
 
                     if checkin['venue'].has_key('categories') and len(checkin['venue']['categories']) > 0:
                         item.icon = checkin['venue']['categories'][0]['icon']
+                        item.categories = checkin['venue']['categories']
 
                     items.append(item)
                     del(item)

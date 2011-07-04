@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
+from django.utils.datastructures import SortedDict
 
 PACKAGE = 'causal.foursquare'
 
@@ -75,9 +76,10 @@ def stats(request, service_id):
     if check_is_service_id(service, PACKAGE):
         template_values = {}
         # get checkins
-        checkins = service.handler.get_items(date.today() - timedelta(days=7))
+        checkins, categories = service.handler.get_stats_items(date.today() - timedelta(days=7))
 
         template_values['checkins'] = checkins
+        template_values['max_checkins'] = categories[categories.keyOrder[0]]
 
         return render(
             request,
