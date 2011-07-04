@@ -21,7 +21,7 @@ class ServiceHandler(BaseServiceHandler):
         """
 
         self.flickr = flickrapi.FlickrAPI(self.service.app.auth_settings['api_key'])
-        photos = self._get_service_items() or {}
+        photos = self._get_service_items(since) or {}
         items = []
 
         if photos:
@@ -63,15 +63,13 @@ class ServiceHandler(BaseServiceHandler):
                 items.append(item)
         return items
 
-    def _get_service_items(self):
+    def _get_service_items(self, since):
         """Helper method to fetch items for either history or stats page.
         """
 
-        delta = timedelta(days=7)
         now = datetime.now()
-        then = now - delta
         epoch_now = time.mktime(now.timetuple())
-        epoch_then = time.mktime(then.timetuple())
+        epoch_then = time.mktime(since.timetuple())
 
         try:
             photos_json = self.flickr.photos_search(
@@ -118,7 +116,7 @@ class ServiceHandler(BaseServiceHandler):
         """
 
         self.flickr = flickrapi.FlickrAPI(self.service.app.auth_settings['api_key'])
-        photos = self._get_service_items()
+        photos = self._get_service_items(since)
 
         items = []
 
