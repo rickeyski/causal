@@ -47,3 +47,7 @@ class ServiceHandler(BaseServiceHandler):
             raise LoggedServiceError(original_exception=e)
 
         return items
+    
+    def get_stats_items(self, since):
+        """Stubbed out for now"""
+        return self.get_items(since)

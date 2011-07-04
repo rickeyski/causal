@@ -10,17 +10,43 @@
 {% endblock head %}
 
 {% block primary %}
-    <div id="all-services" class="ui-tabs-panel ui-widget-content ui-corner-bottom">
-    <div id="connections">        
-    <ul>
-    {% if connections %}
-    {% for connection in connections %}
-       <li class="{{connection.clazz_name}}"><a href="{{connection.link_back}}">{{connection.created_date|date:"D H:ma"}}</a>{% if connection.title %} {{connection.title}} {% endif %} {{connection.body|safe }}</li>
-    {% endfor %}
-    {% else %}
-       This user is feeling a little shy and isn't sharing anything, move along.
-    {% endif %}
-    <ul>
-    </div>
+    <div id="main" class="clearfix"> 
+             
+        <div id="left">
+            <ul class="nav">
+                <li class="feed active">
+                    <a class="img causal-timeline tab-link" href="/" title="7 day timeline"><span>feed</span></a>
+                </li>
+                <li class="stats inactive">
+                    
+                </li>
+            </ul>
+        </div> <!-- #left -->
+    
+        <div id="centre" class="stat-tab" style="display: block; ">
+        <ol id="days">
+                
+            {% if connections %}
+            <h2>Today (<span class="numitems">{{total}}</span>)</h2>
+            <li id="day_0" class="day">
+                <a href="#" class="showhide"></a> 
+                <ol class="feeditems">
+                {% for connection in connections %}
+                <li class="{{connection.clazz_name}}">
+                    <p>
+                    {% if connection.title %}{{connection.title|safe}} {%endif%}{{connection.body|safe}} 
+                    </p>
+                    <span class="time"><a href="{{link_back|safe}}">{{connection.created_date|date:"D H:m"}}</a></span>
+                </li>
+        {% endfor %}
+            </li>
+        </ol> 
+        {% else %}
+           This user is feeling a little shy and isn't sharing anything, move along.
+        {% endif %}
+                        
+        </div>
+    
+
     </div>
 {% endblock primary %}

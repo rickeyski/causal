@@ -27,6 +27,10 @@ class ServiceHandler(BaseServiceHandler):
 
         return self._convert_feed(user_feed, since)
 
+    def get_stats_items(self, since):
+        """Stubbed out for now"""
+        return self.get_items(since)
+    
     def _convert_feed(self, json, since):
         """Convert the json feed into Service Items limiting on since.
         """

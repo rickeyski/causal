@@ -35,6 +35,10 @@ class ServiceHandler(OAuthServiceHandler):
 
         return timeline
 
+    def get_stats_items(self, since):
+        """Stubbed out for now"""
+        return self.get_items(since)    
+    
     def _convert_feed(self, feed, since, screen_name):
         """Take the json and convert to ServiceItems"""
         items = []
