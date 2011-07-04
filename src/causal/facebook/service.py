@@ -141,7 +141,7 @@ class ServiceHandler(OAuthServiceHandler):
         for album in albums['data']:
             if album.has_key('updated_time'):
                 updated = datetime.strptime(album['updated_time'].split('+')[0], '%Y-%m-%dT%H:%M:%S') #'2007-06-26T17:55:03+0000'
-                if updated.date() > since:
+                if updated.date() >= since:
                     photo_feed = self._fetch_photos_from_album_json(album['id'])
 
                     # skim through each pic to find the new ones
