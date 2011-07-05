@@ -79,7 +79,12 @@ def stats(request, service_id):
         checkins, categories = service.handler.get_stats_items(date.today() - timedelta(days=7))
 
         template_values['checkins'] = checkins
-        template_values['max_checkins'] = categories[categories.keyOrder[0]]
+        template_values['categories'] = categories
+        
+        template_values['max_checkins'] = 0
+        for cat, det in categories.iteritems():
+	    if det['count'] > template_values['max_checkins']:
+ 		template_values['max_checkins'] = det['count']
 
         return render(
             request,

@@ -36,9 +36,16 @@ class ServiceHandler(OAuthServiceHandler):
         for checkin in checkins:
             if hasattr(checkin, 'categories'):
                 if categories.has_key(checkin.categories[0]['name']):
-                    categories[checkin.categories[0]['name']] += 1
+                    categories[checkin.categories[0]['name']]['count'] += 1
                 else:
-                    categories[checkin.categories[0]['name']] = 1
+                    if hasattr(checkin, 'icon'):
+                        icon = checkin.icon
+                    else:
+                        icon = checkin.categories[0]['name']
+                    categories[checkin.categories[0]['name']] = {
+                        'icon' : checkin.icon,
+                        'count' : 1
+                        }
                     
         categories = SortedDict(sorted(categories.items(), reverse=True, key=lambda x: x[1]))
                     

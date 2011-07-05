@@ -15,9 +15,9 @@
                 <h4>No checkins? Get out more!</h4>
             {%endif%}
             </ul>
-            <h3>Checkins by Typeover the Past 7 Days</h3>
+            <h3>Checkins Breakdown</h3>
             <ul>
-                <li><img src="http://chart.apis.google.com/chart?chxr=1,0,{{max_checkins}}&chxt=x,y&chxl=0:{% for cat, count in categories.items %}|{{datetime|date:"D"}}{% endfor %}&chbh=a&chs=300x225&cht=bvg&chco=A2C180&chds=0,{{max_tweeted_on_a_day}}&chd=t:{% for datetime, count in days_tweeted.items %}{{count}}{% if not forloop.last %},{% endif%}{%endfor%}"/></li>
+                <li><img src="http://chart.apis.google.com/chart?chxr=1,0,{{max_checkins}}&chxt=x,y&chxl=0:{% for category, details in categories.items %}|{{category}}{% endfor %}&chs=700x225&cht=bvg&chco=A2C180&chds=0,{{max_checkins}}&chd=t:{% for category, details in categories.items %}{{details.count}}{% if not forloop.last %},{% endif%}{%endfor%}&chbh=75,20,50"/></li>
             </ul>
             <div class="clearfix"></div> 
             <div id="right"></div> <! --#right --> 
