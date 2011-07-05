@@ -33,7 +33,18 @@ class ServiceHandler(OAuthServiceHandler):
 
         categories = {}
         
+        mayorships = {}
+        
         for checkin in checkins:
+
+            if hasattr(checkin, 'is_mayor'):
+                if mayorships.has_key(checkin.title):
+                    mayorships[checkin.title]['count'] += 1
+                else:
+                    mayorships[checkin.title] = {'venue' : checkin,
+                                                 'count' : 1
+                                                 }
+                    
             if hasattr(checkin, 'categories'):
                 if categories.has_key(checkin.categories[0]['name']):
                     categories[checkin.categories[0]['name']]['count'] += 1
@@ -49,7 +60,7 @@ class ServiceHandler(OAuthServiceHandler):
                     
         categories = SortedDict(sorted(categories.items(), reverse=True, key=lambda x: x[1]))
                     
-        return checkins, categories
+        return checkins, categories, mayorships
     
     def _convert_feed(self, json, since):
         """Take the raw json from the feed and convert it to ServiceItems.
