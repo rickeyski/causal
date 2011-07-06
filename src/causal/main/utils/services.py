@@ -1,6 +1,6 @@
 import httplib2
 import oauth2 as oauth
-from datetime import datetime
+from datetime import datetime, timedelta, date
 from django.shortcuts import redirect
 from django.core.urlresolvers import reverse
 from django.utils import simplejson
@@ -95,7 +95,25 @@ def get_url(url):
     resp, content = h.request(url, "GET")
     
     return simplejson.loads(content)
+
+def generate_days_dict():
+    """Generate a dict of dates for each day of the week,
+    this is used by a service to count the number events that
+    happened on a day."""
+
+    day = timedelta(days=1)
+        
+    start_day = date.today() - timedelta(days=7)
     
+    # the date class will serve as the key
+    day_range = { start_day : 0 }
+    
+    # loop round and create a key for each day for the past week
+    for i in range(0,7):
+        start_day = start_day + day
+        day_range[start_day] = 0
+        
+    return day_range
     
 def get_data(service, url, disable_oauth=False):
     """Helper function for retrieving JSON data from a web service, with
