@@ -7,7 +7,7 @@
             <ul>
             {% if checkins %}
                 {% for checkin in checkins %}
-                    <li>{%if checkin.link_back %} <a href="{{checkin.link_back}}"> {{checkin.created|date:"D H:m"}}</a>{% endif%} {%if checkin.icon %} <img src="{{checkin.icon}}" /> {% endif %}  {{checkin.title}} - {{checkin.body}}. 
+                    <li>{%if checkin.link_back %} <a href="{{checkin.link_back}}"> {{checkin.created|date:"D H:m"}}</a>{% endif%} {%if checkin.icon %} <img width="15" height="15" src="{{checkin.icon}}" /> {% endif %}  {{checkin.title}} - {{checkin.body}}. 
                     
                     {%if checkin.is_mayor %} You are the mayor! {% endif %}</li>
                 {% endfor %}
@@ -15,6 +15,22 @@
                 <h4>No checkins? Get out more!</h4>
             {%endif%}
             </ul>
+            <h3>Checkins Breakdown</h3>
+            <ul>
+                <li><img src="http://chart.apis.google.com/chart?chxr=1,0,{{max_checkins}}&chxt=x,y&chxl=0:{% for category, details in categories.items %}|{{category}}{% endfor %}&chs=700x225&cht=bvg&chco=A2C180&chds=0,{{max_checkins}}&chd=t:{% for category, details in categories.items %}{{details.count}}{% if not forloop.last %},{% endif%}{%endfor%}&chbh=75,20,50"/></li>
+            </ul>
+            <h3>Mayorships</h3>
+            <ul>
+            {% if mayorships %}
+                {% for name, checkin in mayorships.items %}
+                    <li><a href="{{checkin.venue.link_back}}">{{checkin.venue.title}}</a></li>
+                {% endfor %}
+            {% else %}
+                <li>You are mayor of nowhere!</li>
+            {% endif %}
+            </ul>
+            <h3>Total Checkins: {{total_checkins}}</h3>
+            <h3>Checkins Per Day: {{checkins_per_day}}</h3>
             <div class="clearfix"></div> 
             <div id="right"></div> <! --#right --> 
         </div> <!-- #centre --> 
