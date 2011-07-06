@@ -4,7 +4,7 @@ import httplib2
 from causal.main.decorators import can_view_service
 from causal.main.models import UserService, Auth
 from causal.main.utils.services import settings_redirect, \
-     get_model_instance, check_is_service_id
+     get_model_instance, check_is_service_id, generate_days_dict
 from causal.main.utils.views import render
 from datetime import datetime, date, timedelta
 from django.contrib.auth.decorators import login_required
@@ -83,15 +83,7 @@ def stats(request, service_id):
         template_values['most_commented_picture'] = None
         template_values['number_of_pictures_favorites'] = 0
         template_values['cameras_used'] = {}
-        
-        day = timedelta(days=1)
-        
-        start_day = (date.today() - timedelta(days=7))
-        
-        template_values['days_taken'] = {start_day : 0}
-        for i in range(0,6):
-            start_day = start_day + day
-            template_values['days_taken'][start_day] = 0
+        template_values['days_taken'] = generate_days_dict()
         
         number_of_pictures_favorites = 0
 
@@ -126,7 +118,7 @@ def stats(request, service_id):
         template_values['days_taken'] = SortedDict(sorted(template_values['days_taken'].items(), reverse=False, key=lambda x: x[0]))
         
         max_taken_on_a_day = SortedDict(sorted(template_values['days_taken'].items(), reverse=True, key=lambda x: x[1]))
-        template_values['max_taken_on_a_day'] = max_taken_on_a_day[max_taken_on_a_day.keyOrder[0]]
+        template_values['max_taken_on_a_day'] = max_taken_on_a_day[max_taken_on_a_day.keyOrder[0]] + 1
 
         if template_values['number_of_pictures_favorites'] == 0:
             template_values['number_of_pictures_favorites'] = "No favourite pictures this week."

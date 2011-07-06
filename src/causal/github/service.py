@@ -1,11 +1,11 @@
 import time
 import feedparser
 from dateutil import parser
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from BeautifulSoup import Tag, SoupStrainer, BeautifulSoup as soup
 from causal.main.handlers import BaseServiceHandler
 from causal.main.models import ServiceItem
-from causal.main.utils.services import get_data
+from causal.main.utils.services import get_data, generate_days_dict
 from causal.main.exceptions import LoggedServiceError
 from django.utils.datastructures import SortedDict
 
@@ -35,7 +35,10 @@ class ServiceHandler(BaseServiceHandler):
         """Fetch stats updates.
         """
 
-        return self._convert_stats_feed(self._get_feed(), since)
+        feed = self._get_feed()
+        if not feed:
+            return
+        return self._convert_stats_feed(feed, since)
 
     def _convert_feed(self, feed, since):
         """Take the user's atom feed.
@@ -104,10 +107,12 @@ class ServiceHandler(BaseServiceHandler):
             avatar = 'http://www.gravatar.com/avatar/%s' % (feed[0]['actor_attributes']['gravatar_id'],)
 
         commit_times = {}
-
+        
+        days_committed = generate_days_dict()
+        
         for entry in feed:
             if entry['public']:
-                date, time, offset = entry['created_at'].rsplit(' ')
+                dated, time, offset = entry['created_at'].rsplit(' ')
                 created = self._convert_date(entry)
 
                 if created.date() >= since:
@@ -129,6 +134,9 @@ class ServiceHandler(BaseServiceHandler):
 
                             item.service = self.service
                             items.append(item)
+                            
+                            if days_committed.has_key(item.created.date()):
+                                days_committed[item.created.date()] = days_committed[item.created.date()] + 1
                         
                             hour = created.strftime('%H')
                             if commit_times.has_key(hour):
@@ -149,8 +157,12 @@ class ServiceHandler(BaseServiceHandler):
             reverse=True,
             key=lambda x: x[1]
         ))
+        
+        days_committed = SortedDict(sorted(days_committed.items(), reverse=False, key=lambda x: x[0]))
+        max_commits_on_a_day = SortedDict(sorted(days_committed.items(), reverse=True, key=lambda x: x[1]))
+        max_commits_on_a_day = max_commits_on_a_day[max_commits_on_a_day.keyOrder[0]] + 1
 
-        return items, avatar, commit_times, self._most_common_commit_time(commit_times)
+        return items, avatar, commit_times, self._most_common_commit_time(commit_times), days_committed, max_commits_on_a_day
 
     def _create_service_item(self, entry):
         """Create a service item from github's format"""
