@@ -8,7 +8,7 @@ import tweepy
 from causal.main.decorators import can_view_service
 from causal.main.models import UserService, RequestToken
 from causal.main.utils.services import get_model_instance, \
-     generate_access_token, settings_redirect, check_is_service_id
+     generate_access_token, settings_redirect, check_is_service_id, generate_days_dict
 from causal.main.utils.views import render
 from causal.twitter.utils import _oauth, user_login, get_user
 from datetime import date, timedelta
@@ -66,16 +66,8 @@ def stats(request, service_id):
         # retweet ratio
         # who you tweet the most
         ats = {}
-
-        # to store a break down of tweets per day
-        day = timedelta(days=1)
         
-        start_day = (date.today() - timedelta(days=7))
-        
-        template_values['days_tweeted'] = {start_day : 0}
-        for i in range(0,7):
-            start_day = start_day + day
-            template_values['days_tweeted'][start_day] = 0
+        template_values['days_tweeted'] = generate_days_dict()
             
         if tweets:
             for tweet in tweets:
@@ -107,7 +99,7 @@ def stats(request, service_id):
             template_values['days_tweeted'] = SortedDict(sorted(template_values['days_tweeted'].items(), reverse=False, key=lambda x: x[0]))
             
             max_tweeted_on_a_day = SortedDict(sorted(template_values['days_tweeted'].items(), reverse=True, key=lambda x: x[1]))
-            template_values['max_tweeted_on_a_day'] = max_tweeted_on_a_day[max_tweeted_on_a_day.keyOrder[0]]
+            template_values['max_tweeted_on_a_day'] = max_tweeted_on_a_day[max_tweeted_on_a_day.keyOrder[0]] + 1
             
         return render(
             request,

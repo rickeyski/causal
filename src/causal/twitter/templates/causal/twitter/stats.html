@@ -10,7 +10,7 @@
             </ul>            
             <h3>Tweet Distribution over the Past 7 Days</h3>
             <ul>
-                <li><img src="http://chart.apis.google.com/chart?chxr=1,0,{{max_tweeted_on_a_day}}&chxt=x,y&chxl=0:{% for datetime, count in days_tweeted.items %}|{{datetime|date:"D"}}{% endfor %}&chbh=a&chs=300x225&cht=bvg&chco=A2C180&chds=0,{{max_tweeted_on_a_day}}&chd=t:{% for datetime, count in days_tweeted.items %}{{count}}{% if not forloop.last %},{% endif%}{%endfor%}"/></li>
+                <li><img src="http://chart.apis.google.com/chart?chxr=1,0,{{max_tweeted_on_a_day}},2&chxt=x,y&chxl=0:{% for datetime, count in days_tweeted.items %}|{{datetime|date:"D"}}{% endfor %}&chbh=a&chs=300x225&cht=bvg&chco=A2C180&chds=0,{{max_tweeted_on_a_day}}&chd=t:{% for datetime, count in days_tweeted.items %}{{count}}{% if not forloop.last %},{% endif%}{%endfor%}"/></li>
             </ul>
             <h3>People you @'ed</h3>
             <ul>

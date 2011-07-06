@@ -6,7 +6,7 @@
             <img src="{{avatar}}"/>
             <h3>Commits per day</h3>
             <ul>
-            <li><img src="http://chart.apis.google.com/chart?chxr=1,0,{{max_commits_on_a_day}}&chxt=x,y&chxl=0:{% for datetime, count in days_committed.items %}|{{datetime|date:"D"}}{% endfor %}&chbh=a&chs=300x225&cht=bvg&chco=A2C180&chds=0,{{max_taken_on_a_day}}&chd=t:{% for datetime, count in days_committed.items %}{{count}}{% if not forloop.last %},{% endif%}{%endfor%}"/></li>
+            <li><img src="http://chart.apis.google.com/chart?chxr=1,0,{{max_commits_on_a_day}},2&chxt=x,y&chxl=0:{% for datetime, count in days_committed.items %}|{{datetime|date:"D"}}{% endfor %}&chbh=a&chs=300x225&cht=bvg&chco=A2C180&chds=0,{{max_commits_on_a_day}}&chd=t:{% for datetime, count in days_committed.items %}{{count}}{% if not forloop.last %},{% endif%}{%endfor%}"/></li>
             </ul>
             <h3>Activities</h3>
             <ul>
@@ -33,7 +33,7 @@
             <h4>Break Down of Commit Times</h4>
             <ul>
                 {% for hour, count in commit_times.iteritems %}
-                <li>{{hour}}:00 - {{count}} commits</li>
+                <li>{{count}} commits - {{hour}}:00</li>
                 {% endfor %}
             </ul>
             {% endif %}
