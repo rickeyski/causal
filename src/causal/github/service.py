@@ -1,7 +1,7 @@
 import time
 import feedparser
 from dateutil import parser
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from BeautifulSoup import Tag, SoupStrainer, BeautifulSoup as soup
 from causal.main.handlers import BaseServiceHandler
 from causal.main.models import ServiceItem
@@ -104,10 +104,18 @@ class ServiceHandler(BaseServiceHandler):
             avatar = 'http://www.gravatar.com/avatar/%s' % (feed[0]['actor_attributes']['gravatar_id'],)
 
         commit_times = {}
-
+        day = timedelta(days=1)
+        
+        start_day = date.today() - timedelta(days=7)
+        
+        days_committed = {start_day : 0}
+        for i in range(0,7):
+            start_day = start_day + day
+            days_committed[start_day] = 0
+        
         for entry in feed:
             if entry['public']:
-                date, time, offset = entry['created_at'].rsplit(' ')
+                dated, time, offset = entry['created_at'].rsplit(' ')
                 created = self._convert_date(entry)
 
                 if created.date() >= since:
@@ -129,6 +137,9 @@ class ServiceHandler(BaseServiceHandler):
 
                             item.service = self.service
                             items.append(item)
+                            
+                            if days_committed.has_key(item.created.date()):
+                                days_committed[item.created.date()] = days_committed[item.created.date()] + 1
                         
                             hour = created.strftime('%H')
                             if commit_times.has_key(hour):
@@ -149,8 +160,12 @@ class ServiceHandler(BaseServiceHandler):
             reverse=True,
             key=lambda x: x[1]
         ))
+        
+        days_committed = SortedDict(sorted(days_committed.items(), reverse=False, key=lambda x: x[0]))
+        max_commits_on_a_day = SortedDict(sorted(days_committed.items(), reverse=True, key=lambda x: x[1]))
+        max_commits_on_a_day = max_commits_on_a_day[max_commits_on_a_day.keyOrder[0]]
 
-        return items, avatar, commit_times, self._most_common_commit_time(commit_times)
+        return items, avatar, commit_times, self._most_common_commit_time(commit_times), days_committed, max_commits_on_a_day
 
     def _create_service_item(self, entry):
         """Create a service item from github's format"""

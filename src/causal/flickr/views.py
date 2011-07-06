@@ -89,7 +89,7 @@ def stats(request, service_id):
         start_day = (date.today() - timedelta(days=7))
         
         template_values['days_taken'] = {start_day : 0}
-        for i in range(0,6):
+        for i in range(0,7):
             start_day = start_day + day
             template_values['days_taken'][start_day] = 0
         
