@@ -25,7 +25,7 @@ def verify_auth(request):
     service = get_model_instance(request.user, PACKAGE)
     service.auth.request_token.oauth_verify = request.GET.get('oauth_verifier')
     service.auth.request_token.save()
-    generate_access_token(service, "http://twitter.com/oauth/access_token")
+    generate_access_token(service, "https://twitter.com/oauth/access_token")
 
     # Mark as setup completed
     service.setup = True
