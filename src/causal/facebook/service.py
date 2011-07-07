@@ -284,17 +284,19 @@ class ServiceHandler(OAuthServiceHandler):
         
         for entry in user_stream['data']:
             
-            created = datetime.strptime(entry['created_time'].split('+')[0], '%Y-%m-%dT%H:%M:%S') #'2007-06-26T17:55:03+0000'
-            if created.date() >= since:
-                resp, content = h.request('https://graph.facebook.com/%s' % (entry['id']), "GET")
-                info_on_like = simplejson.loads(content)
-                
-                item = ServiceItem()
-                item.created = created
-                item.title = entry['name']
-                item.body = entry['category']
-                item.link_back = info_on_like['link']
-                item.service = self.service
-                items.append(item)
-                
+            if entry.has_key('created_time'):
+                created = datetime.strptime(entry['created_time'].split('+')[0], '%Y-%m-%dT%H:%M:%S') #'2007-06-26T17:55:03+0000'
+                if created.date() >= since:
+                    resp, content = h.request('https://graph.facebook.com/%s' % (entry['id']), "GET")
+                    info_on_like = simplejson.loads(content)
+                    
+                    item = ServiceItem()
+                    item.created = created
+                    item.title = entry['name']
+                    item.body = entry['category']
+                    item.link_back = info_on_like['link']
+                    item.service = self.service
+                    items.append(item)
+            else:
+                pass
         return items
