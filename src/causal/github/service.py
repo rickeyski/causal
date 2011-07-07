@@ -78,7 +78,10 @@ class ServiceHandler(BaseServiceHandler):
             offset = offset[:2]
             time_offset = timedelta(hours=int(offset))
 
-            converted_date = datetime.strptime(date + ' ' + time, '%Y/%m/%d %H:%M:%S') + time_offset
+            try:
+                converted_date = datetime.strptime(date + ' ' + time, '%Y/%m/%d %H:%M:%S') + time_offset
+            except:
+                converted_date = datetime.now() + time_offset
 
         return converted_date
 

@@ -14,6 +14,7 @@ from causal.twitter.utils import _oauth, user_login, get_user
 from datetime import date, timedelta
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.shortcuts import get_object_or_404
 from django.utils.datastructures import SortedDict
 
@@ -25,7 +26,13 @@ def verify_auth(request):
     service = get_model_instance(request.user, PACKAGE)
     service.auth.request_token.oauth_verify = request.GET.get('oauth_verifier')
     service.auth.request_token.save()
-    generate_access_token(service, "https://twitter.com/oauth/access_token")
+    
+    if not generate_access_token(service, "https://twitter.com/oauth/access_token"):
+        messages.error(
+                        request,
+                        'Unable to validate your username with Flickr, please check your username and retry.'
+                    )
+        return HttpResponseRedirect(settings_redirect(request))
 
     # Mark as setup completed
     service.setup = True

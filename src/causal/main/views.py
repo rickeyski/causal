@@ -189,7 +189,8 @@ def history_callback(request, username, service_id):
 
     if request.method == "DELETE":
         service.delete()
-        return redirect('user-settings')
+        status_code = 200
+        return HttpResponse(status=status_code)
 
     data = _get_service_history(service)
     if data['error']:
