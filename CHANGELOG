@@ -1,12 +1,18 @@
 ChangeLog for Causal
 ====================
 
-1.0.17 (2011-07-06)
+1.0.19 (2011-07-07)
 ------------------
+ - fixes a few stray bugs that appeared in error logs
+
+1.0.18 (2011-07-06)
+------------------
+
  - actual release with files missed from 0.1.17
 
 1.0.17 (2011-07-06)
 ------------------
+
  - Added twitter fix by Benjamin Reitzammer for https to twitter
  - Added nice graphs and some improved stats for github and foursquare
 
