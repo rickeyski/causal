@@ -74,8 +74,10 @@ def generate_access_token(service, token_url):
     client = oauth.Client(consumer, token)
     resp, content = client.request(token_url, "POST")
 
-    access_token_params = dict((token.split('=') for token in content.split('&')))
-
+    try:
+        access_token_params = dict((token.split('=') for token in content.split('&')))
+    except:
+        return
     # Before creating a new one
     at = AccessToken.objects.create(
         oauth_token=access_token_params['oauth_token'],
@@ -85,7 +87,7 @@ def generate_access_token(service, token_url):
     service.auth.access_token = at
     service.auth.save()
 
-    
+    return True
     
 def get_url(url):
     """Helper function for retrieving JSON data from a web service.
