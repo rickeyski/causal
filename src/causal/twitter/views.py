@@ -84,11 +84,15 @@ def stats(request, service_id):
                     retweets = retweets + 1
                 else:
                     atteds = re.findall('@[\w]*', tweet.body)
-                    for i in atteds:
-                        if ats.has_key(i):
-                            ats[i] = ats[i] + 1
-                        else:
-                            ats[i] = 1
+                    for user in atteds:
+                        username = user.split('@')[1]
+                        if username:
+                            if ats.has_key(user):
+                                ats[user]['count'] += 1
+                            else:
+                                ats[user] = {'avatar': 'http://api.twitter.com/1/users/profile_image/%s.json' % (username),
+                                          'count' : 1
+                                }
     
                 if template_values['days_tweeted'].has_key(tweet.created.date()):
                     template_values['days_tweeted'][tweet.created.date()] = \
@@ -101,7 +105,7 @@ def stats(request, service_id):
 
             # order by value and reverse to put most popular at the top
             template_values['atters'] = SortedDict(
-                sorted(ats.items(), reverse=True, key=lambda x: x[1]))
+                sorted(ats.items(), reverse=True, key=lambda x: x[1]['count']))
             
             template_values['days_tweeted'] = SortedDict(sorted(template_values['days_tweeted'].items(), reverse=False, key=lambda x: x[0]))
             
