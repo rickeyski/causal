@@ -15,7 +15,7 @@
             <h3>People you @'ed</h3>
             <ul>
                 {% for a, t in atters.iteritems %}
-                <li>{{ a }} : {{ t }} time{%if t > 1 %}s {%endif%}</li>
+                <li><img src="{{t.avatar }}" /> <a href="http://twitter.com/{{ a }}">{{a}}</a> : {{ t.count }} time{%if t.count > 1 %}s {%endif%}</li>
                 {% endfor %}
             </ul>
             {% else %}
