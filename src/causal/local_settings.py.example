@@ -65,7 +65,7 @@ SERVICE_CONFIG = {
    'causal.flickr': {
        'auth': {
            'api_key': 'asdfghjkl1234567890'
-           'api_secret' : '35db60926ed00528',
+           'api_secret' : 'asdfghjkl1234567890',
            'request_url' : 'http://www.flickr.com/services/oauth/request_token',
            'authorization_url' : 'http://www.flickr.com/services/oauth/authorize',
            'access_token_url' : 'http://www.flickr.com/services/oauth/access_token',
