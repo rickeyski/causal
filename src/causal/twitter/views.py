@@ -30,7 +30,7 @@ def verify_auth(request):
     if not generate_access_token(service, "https://twitter.com/oauth/access_token"):
         messages.error(
                         request,
-                        'Unable to validate your username with Flickr, please check your username and retry.'
+                        'Unable to validate your account with Twitter, please grant gargoyle.me access.'
                     )
         return HttpResponseRedirect(settings_redirect(request))
 
