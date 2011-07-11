@@ -3,8 +3,7 @@
 import httplib2
 from causal.main.decorators import can_view_service
 from causal.main.models import UserService, Auth
-from causal.main.utils.services import settings_redirect, \
-     get_model_instance, check_is_service_id, generate_days_dict
+from causal.main.utils.services import settings_redirect, OAuthClient
 from causal.main.utils.views import render
 from datetime import datetime, date, timedelta
 from django.contrib.auth.decorators import login_required
@@ -13,7 +12,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.utils import simplejson
 from django.utils.datastructures import SortedDict
 
-PACKAGE_NAME = 'causal.flickr'
+PACKAGE = 'causal.flickr'
 
 @login_required(redirect_field_name='redirect_to')
 def verify_auth(request):
@@ -21,52 +20,13 @@ def verify_auth(request):
 
 @login_required(redirect_field_name='redirect_to')
 def auth(request):
-    """We dont need a full oauth setup just a username.
-    """
-
-    #http://flickr.com/services/auth/?api_key=[api_key]&perms=[perms]&api_sig=[api_sig]    
+    """Prepare a oauth request by saving a record locally ready for the
+    redirect from twitter."""
     
-    service = get_model_instance(request.user, PACKAGE_NAME)
-
-    if service and request.method == 'POST':
-        username = request.POST['username']
-
-        if username:
-            # Talk to flickr to get a flickr ID 1234567@N0 style
-            url = "http://api.flickr.com/services/rest/?method=flickr.people.findByUsername&api_key=%s&username=%s&format=json&nojsoncallback=1" % \
-                (service.app.auth_settings['api_key'], username)
-
-            http_requester = httplib2.Http()
-            resp, content = http_requester.request(url, "GET")
-
-            if resp['status'] == '200':
-                json = simplejson.loads(content)
-
-                # Parse the request and check we have got back flickr id
-                if json['stat'] == 'ok':
-                    userid = json['user']['id']
-
-                    if not service.auth:
-                        auth_handler = Auth()
-                    else:
-                        auth_handler = service.auth
-                    auth_handler.username = username
-                    auth_handler.secret = userid
-                    auth_handler.save()
-                    if not service.auth:
-                        service.auth = auth_handler
-
-                    service.setup = True
-                    service.public = True
-                    service.save()
-                else:
-                    messages.error(
-                        request,
-                        'Unable to validate your username with Flickr, please check your username and retry.'
-                    )
-        else:
-            messages.error(request, 'Please enter a Flickr username')
-    return redirect(settings_redirect(request))
+    request.session['causal_flickr_oauth_return_url'] = \
+           request.GET.get('HTTP_REFERER', None)
+    service = get_model_instance(request.user, PACKAGE)
+    return user_login(service)
 
 @can_view_service
 def stats(request, service_id):
