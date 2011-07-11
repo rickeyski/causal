@@ -2,7 +2,7 @@
 feed from flickr.com.
 """
 
-from causal.main.handlers import BaseServiceHandler
+from causal.main.handlers import OAuthServiceHandler
 from causal.main.models import ServiceItem
 from causal.main.exceptions import LoggedServiceError
 from datetime import datetime, timedelta
@@ -10,7 +10,7 @@ from django.utils import simplejson
 import flickrapi
 import time
 
-class ServiceHandler(BaseServiceHandler):
+class ServiceHandler(OAuthServiceHandler):
     display_name = 'Flickr'
 
     def get_items(self, since):

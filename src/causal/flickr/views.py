@@ -1,9 +1,10 @@
 """Handle account settings for flickr and other direct url requests."""
 
 import httplib2
+from oauth2 import Consumer, Token, Client
 from causal.main.decorators import can_view_service
-from causal.main.models import UserService, Auth
-from causal.main.utils.services import settings_redirect, OAuthClient
+from causal.main.models import OAuth, RequestToken, AccessToken, UserService
+from causal.main.utils.services import settings_redirect, get_model_instance, generate_access_token
 from causal.main.utils.views import render
 from datetime import datetime, date, timedelta
 from django.contrib.auth.decorators import login_required
@@ -11,22 +12,80 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import simplejson
 from django.utils.datastructures import SortedDict
+from django.conf import settings
+from django.contrib.sites.models import Site
+from django.core.urlresolvers import reverse
 
 PACKAGE = 'causal.flickr'
 
 @login_required(redirect_field_name='redirect_to')
 def verify_auth(request):
-    pass
+    """Take incoming request and validate it to create a valid AccessToken."""
+    service = get_model_instance(request.user, PACKAGE)
+    service.auth.request_token.oauth_verify = request.GET.get('oauth_verifier')
+    service.auth.request_token.save()
+    
+    if not generate_access_token(service, service.app.auth_settings['access_token_url']):
+        messages.error(
+                        request,
+                        'Unable to validate your username with Flickr, please check grant permission for gargoyle.me to access your photos.'
+                    )
+        return HttpResponseRedirect(settings_redirect(request))
+
+    ## Mark as setup completed
+    service.setup = True
+
+    ## Test if service is protected on twitter's side
+    ## if so mark it
+    #twitter_user = get_user(service)
+    #if twitter_user.protected:
+        #service.public = False
+    #else:
+        #service.public = True
+
+    service.save()
+
+    return redirect(settings_redirect(request))
 
 @login_required(redirect_field_name='redirect_to')
 def auth(request):
     """Prepare a oauth request by saving a record locally ready for the
     redirect from twitter."""
     
-    request.session['causal_flickr_oauth_return_url'] = \
-           request.GET.get('HTTP_REFERER', None)
     service = get_model_instance(request.user, PACKAGE)
-    return user_login(service)
+    
+    if not service.auth:
+        auth_handler = OAuth()
+    else:
+        auth_handler = service.auth    
+    
+        
+    current_site = Site.objects.get(id=settings.SITE_ID)
+    callback = reverse('causal-flickr-callback')
+    callback = "http://%s%s" % (current_site.domain, callback,)
+    consumer = Consumer(service.app.auth_settings['consumer_key'], service.app.auth_settings['consumer_secret'])
+    token = Token(service.app.auth_settings['consumer_key'], service.app.auth_settings['consumer_secret'])
+    token.callback = callback
+    client = Client(consumer)
+    
+    resp, content = client.request(service.app.auth_settings['request_token_url'], "POST", body='oauth_callback=%s' % (callback),
+                                   headers={'Content-Type' :'application/x-www-form-urlencoded'})
+    oauth_callback_confirmed, oauth_token, oauth_token_secret = content.split('&')
+    
+    new_rt = RequestToken()
+    new_rt.oauth_token = oauth_token.split('=')[1]
+    new_rt.oauth_token_secret = oauth_token_secret.split('=')[1]
+    new_rt.save()
+    
+    auth_handler.request_token = new_rt
+    auth_handler.save()
+    if not service.auth:
+        service.auth = auth_handler
+        service.save()
+    
+    #http://www.flickr.com/services/oauth/authorize
+    
+    return redirect('http://www.flickr.com/services/oauth/authorize?oauth_token=%s&perms=read' %(oauth_token.split('=')[1]))
 
 @can_view_service
 def stats(request, service_id):
