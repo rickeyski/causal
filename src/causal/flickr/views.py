@@ -4,7 +4,7 @@ import httplib2
 from oauth2 import Consumer, Token, Client
 from causal.main.decorators import can_view_service
 from causal.main.models import OAuth, RequestToken, AccessToken, UserService
-from causal.main.utils.services import settings_redirect, get_model_instance, generate_access_token
+from causal.main.utils.services import settings_redirect, get_model_instance, generate_access_token, check_is_service_id
 from causal.main.utils.views import render
 from datetime import datetime, date, timedelta
 from django.contrib.auth.decorators import login_required
@@ -64,12 +64,11 @@ def auth(request):
     callback = reverse('causal-flickr-callback')
     callback = "http://%s%s" % (current_site.domain, callback,)
     consumer = Consumer(service.app.auth_settings['consumer_key'], service.app.auth_settings['consumer_secret'])
-    token = Token(service.app.auth_settings['consumer_key'], service.app.auth_settings['consumer_secret'])
-    token.callback = callback
     client = Client(consumer)
     
     resp, content = client.request(service.app.auth_settings['request_token_url'], "POST", body='oauth_callback=%s' % (callback),
                                    headers={'Content-Type' :'application/x-www-form-urlencoded'})
+    
     oauth_callback_confirmed, oauth_token, oauth_token_secret = content.split('&')
     
     new_rt = RequestToken()
@@ -93,8 +92,13 @@ def stats(request, service_id):
     """
 
     service = get_object_or_404(UserService, pk=service_id)
+    
+    consumer = Consumer(service.app.auth_settings['consumer_key'], service.app.auth_settings['consumer_secret'])
+    token = Token(service.auth.access_token.oauth_token, service.auth.access_token.oauth_token_secret)
+    client = Client(consumer, token=token)
+    resp, content = client.request('http://api.flickr.com/services/rest', "POST", body='method=flickr.test.login&format=json&nojsoncallback=1', headers={'Content-Type' :'application/x-www-form-urlencoded'})
 
-    if check_is_service_id(service, PACKAGE_NAME):
+    if check_is_service_id(service, PACKAGE):
         pictures = service.handler.get_stats_items(date.today() - timedelta(days=7))
         template_values = {}
         # Most commented
