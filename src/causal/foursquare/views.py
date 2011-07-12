@@ -76,11 +76,12 @@ def stats(request, service_id):
     if check_is_service_id(service, PACKAGE):
         template_values = {}
         # get checkins
-        checkins, categories, mayorships = service.handler.get_stats_items(date.today() - timedelta(days=7))
+        checkins, categories, mayorships, badge_images = service.handler.get_stats_items(date.today() - timedelta(days=7))
 
         template_values['checkins'] = checkins
         template_values['categories'] = categories
         template_values['mayorships'] = mayorships
+        template_values['badge_images'] = badge_images
         template_values['max_checkins'] = 0
         template_values['total_checkins'] = len(checkins)
         template_values['checkins_per_day'] = round((len(checkins) / 7.0), 1)

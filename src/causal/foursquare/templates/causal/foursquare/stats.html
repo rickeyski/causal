@@ -3,6 +3,14 @@
 <div class="stats">
     <div id="main" class="clearfix"> 
         <div id="centre"> 
+            <h3>Badges Earned</h3>
+            <ul>
+            <li>
+            {% for name, badge_details in badge_images.items %}
+            <a href="{{badge_details.url}}"><img src="{{badge_details.image}}"/></a>
+            {% endfor %}
+            </li>
+            </ul>
             <h3>Places Checked Into</h3>
             <ul>
             {% if checkins %}
@@ -17,7 +25,7 @@
             </ul>
             <h3>Checkins Breakdown</h3>
             <ul>
-                <li><img src="http://chart.apis.google.com/chart?chxr=1,0,{{max_checkins}}&chxt=x,y&chxl=0:{% for category, details in categories.items %}|{{category}}{% endfor %}&chs=700x225&cht=bvg&chco=A2C180&chds=0,{{max_checkins}}&chd=t:{% for category, details in categories.items %}{{details.count}}{% if not forloop.last %},{% endif%}{%endfor%}&chbh=75,20,50"/></li>
+                <li><img src="http://chart.apis.google.com/chart?chxr=1,0,{{max_checkins}}&chxt=x,y&chxl=0:{% for category, details in categories.items %}|{{category}}{% endfor %}&chs=700x225&cht=bvg&chco=A2C180&chds=0,{{max_checkins}}&chd=t:{% for category, details in categories.items %}{{details.count}}{% if not forloop.last %},{% endif%}{%endfor%}&chbh=75,20,10"/></li>
             </ul>
             <h3>Mayorships</h3>
             <ul>
