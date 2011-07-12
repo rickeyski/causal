@@ -3,15 +3,15 @@ import feedparser
 from dateutil import parser
 from datetime import datetime, timedelta, date
 from BeautifulSoup import Tag, SoupStrainer, BeautifulSoup as soup
-from causal.main.handlers import BaseServiceHandler
-from causal.main.models import ServiceItem
+from causal.main.handlers import OAuthServiceHandler
+from causal.main.models import OAuth, RequestToken, AccessToken, UserService
 from causal.main.utils.services import get_data, generate_days_dict
 from causal.main.exceptions import LoggedServiceError
 from django.utils.datastructures import SortedDict
 
 KEEP_TAGS = ('a', 'span', 'code',)
 
-class ServiceHandler(BaseServiceHandler):
+class ServiceHandler(OAuthServiceHandler):
     display_name = 'Github'
 
     def get_items(self, since):
