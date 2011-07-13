@@ -8,7 +8,7 @@ import httplib2
 from causal.main.decorators import can_view_service
 from causal.main.models import OAuth, RequestToken, AccessToken, UserService
 from causal.main.utils.services import get_model_instance, \
-        settings_redirect, check_is_service_id, get_data
+        settings_redirect, check_is_service_id, get_data, get_url
 from causal.main.utils.views import render
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -25,40 +25,43 @@ def verify_auth(request):
     """Handle reply from github"""
     """Take incoming request and validate it to create a valid AccessToken."""
 
-    service = get_model_instance(request.user, PACKAGE)
-    code = request.GET.get('code')
-    if not code:
-        messages.error(
-                    request,
-                    'Unable to validate your account with GitHub, please check grant permission for gargoyle.me to access your photos.'
+    try:
+        service = get_model_instance(request.user, PACKAGE)
+        code = request.GET.get('code')
+    
+        if code:
+            # swap our newly aquired code for a everlasting signed "token"
+            h = httplib2.Http()
+            resp, content = h.request('https://github.com/login/oauth/access_token?client_id=%s&client_secret=%s&code=%s' % (
+                service.app.auth_settings['consumer_key'], 
+                service.app.auth_settings['consumer_secret'], 
+                code), 
+                "POST")
+        
+            if not resp['status'] == '200' or not content.startswith('access_token'):
+                raise Exception('Token Failure')
+            
+            access, perm_type = content.split('&')
+            # go and fetch the login for the github user
+            user_json = get_url('https://api.github.com/user?access_token=%s' %(access.split('=')[1]))
+            
+            if user_json.has_key('login'):
+                at = AccessToken.objects.create(
+                    oauth_token = access.split('=')[1],
+                    oauth_token_secret = access.split('=')[1],
                 )
-
-    h = httplib2.Http()
-    resp, content = h.request('https://github.com/login/oauth/access_token?client_id=%s&client_secret=%s&code=%s' % (
-        service.app.auth_settings['consumer_key'], 
-        service.app.auth_settings['consumer_secret'], 
-        code), 
-        "POST")
-
-    access, perm_type = content.split('&')
-    
-    at = AccessToken.objects.create(
-        oauth_token = access.split('=')[1],
-        oauth_token_secret = access.split('=')[1],
-    )
-    
-    ## Mark as setup completed
-    service.setup = True
-
-    ## Test if service is protected on twitter's side
-    ## if so mark it
-    #twitter_user = get_user(service)
-    #if twitter_user.protected:
-        #service.public = False
-    #else:
-        #service.public = True
-
-    service.save()
+                
+                service.auth.access_token = at
+                service.auth.save()
+                
+                ## Mark as setup completed
+                service.setup = True    
+                service.save()
+    except:
+        messages.error(
+            request,
+            'Unable to validate your account with GitHub, please check grant permission for gargoyle.me to access your photos.'
+        )
 
     return redirect(settings_redirect(request))
 
@@ -68,34 +71,17 @@ def auth(request):
     """
 
     service = get_model_instance(request.user, PACKAGE)
-    if not service.auth:
-        auth_handler = OAuth()
-    else:
-        auth_handler = service.auth    
     
+    if not service.auth:
+        auth = OAuth()
+        auth.save()
+        service.auth = auth
+        service.save()
         
     current_site = Site.objects.get(id=settings.SITE_ID)
     callback = reverse('causal-github-callback')
     callback = "http://%s%s" % (current_site.domain, callback,)
-    #consumer = Consumer(service.app.auth_settings['consumer_key'], service.app.auth_settings['consumer_secret'])
-    #client = Client(consumer)
 
-    #resp, content = client.request(service.app.auth_settings['request_token_url'], "POST", body='oauth_callback=%s' % (callback),
-                                   #headers={'Content-Type' :'application/x-www-form-urlencoded'})
-    
-    #oauth_callback_confirmed, oauth_token, oauth_token_secret = content.split('&')
-    
-    #new_rt = RequestToken()
-    #new_rt.oauth_token = oauth_token.split('=')[1]
-    #new_rt.oauth_token_secret = oauth_token_secret.split('=')[1]
-    #new_rt.save()
-    
-    #auth_handler.request_token = new_rt
-    #auth_handler.save()
-    #if not service.auth:
-        #service.auth = auth_handlerservice.app.auth_settings['consumer_key']
-        #service.save()
-    
     return redirect('https://github.com/login/oauth/authorize?client_id=%s&redirect_uri=%s' %(
         service.app.auth_settings['consumer_key'],
         callback

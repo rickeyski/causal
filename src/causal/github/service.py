@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, date
 from BeautifulSoup import Tag, SoupStrainer, BeautifulSoup as soup
 from causal.main.handlers import OAuthServiceHandler
 from causal.main.models import OAuth, RequestToken, AccessToken, UserService
-from causal.main.utils.services import get_data, generate_days_dict
+from causal.main.utils.services import get_model_instance, get_data, get_url, generate_days_dict
 from causal.main.exceptions import LoggedServiceError
 from django.utils.datastructures import SortedDict
 
@@ -36,10 +36,22 @@ class ServiceHandler(OAuthServiceHandler):
         """
 
         feed = self._get_feed()
+        repos = self._get_repos()
         if not feed:
             return
         return self._convert_stats_feed(feed, since)
 
+    def _get_repos(self, since):
+        """Fetch the repo list for a user."""
+        
+        repos_url = "https://api.github.com/user/repos?access_token=%s" % (self.service.auth.access_token.oauth_token)
+        repos = get_url(repos_url)
+        
+        for repo in repos:
+            pushed = datetime.strptime(i['pushed_at'], '%Y-%m-%dT%H:%M:%SZ')
+            if pushed > since:
+                pass
+    
     def _convert_feed(self, feed, since):
         """Take the user's atom feed.
         """
