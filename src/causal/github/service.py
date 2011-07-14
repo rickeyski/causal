@@ -4,7 +4,7 @@ from dateutil import parser
 from datetime import datetime, timedelta, date
 from BeautifulSoup import Tag, SoupStrainer, BeautifulSoup as soup
 from causal.main.handlers import OAuthServiceHandler
-from causal.main.models import OAuth, RequestToken, AccessToken, UserService
+from causal.main.models import OAuth, RequestToken, AccessToken, UserService, ServiceItem
 from causal.main.utils.services import get_model_instance, get_data, get_url, generate_days_dict
 from causal.main.exceptions import LoggedServiceError
 from django.utils.datastructures import SortedDict
@@ -24,11 +24,18 @@ class ServiceHandler(OAuthServiceHandler):
         )
 
     def _get_feed(self):
-        feed = get_data(
-            self.service,
-            'https://github.com/%s.json' % (self.service.auth.username,),
-            disable_oauth=True
-        )
+        """Get the user's latest updates from github's json feed"""
+        
+        Feed = None
+        user_json = get_url('https://api.github.com/user?access_token=%s' % (self.service.auth.access_token.oauth_token))
+
+        # check we have the username to access the json feed from github
+        if user_json.has_key('login'):
+            feed = get_data(
+                self.service,
+                'https://github.com/%s.json' % (user_json['login'],),
+                disable_oauth=True
+            )
         return feed
 
     def get_stats_items(self, since):
@@ -236,3 +243,10 @@ class ServiceHandler(OAuthServiceHandler):
                 
         except:
             item.title = "Unknown Event!"
+            
+    def _get_user_info(self):
+        """Get a user's profile data"""
+        
+        user_json = get_url('https://api.github.com/user?access_token=%s' % (self.service.auth.access_token.oauth_token))
+        
+        return user_json
