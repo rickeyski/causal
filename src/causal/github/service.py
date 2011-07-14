@@ -26,16 +26,17 @@ class ServiceHandler(OAuthServiceHandler):
     def _get_feed(self):
         """Get the user's latest updates from github's json feed"""
         
-        Feed = None
-        user_json = get_url('https://api.github.com/user?access_token=%s' % (self.service.auth.access_token.oauth_token))
+        feed = None
+        username = self._get_username()
 
         # check we have the username to access the json feed from github
-        if user_json.has_key('login'):
+        if username:
             feed = get_data(
                 self.service,
-                'https://github.com/%s.json' % (user_json['login'],),
+                'https://github.com/%s.json' % (username),
                 disable_oauth=True
             )
+            
         return feed
 
     def get_stats_items(self, since):
@@ -43,7 +44,8 @@ class ServiceHandler(OAuthServiceHandler):
         """
 
         feed = self._get_feed()
-        repos = self._get_repos()
+        repos = self._get_repos(since)
+        
         if not feed:
             return
         return self._convert_stats_feed(feed, since)
@@ -54,10 +56,13 @@ class ServiceHandler(OAuthServiceHandler):
         repos_url = "https://api.github.com/user/repos?access_token=%s" % (self.service.auth.access_token.oauth_token)
         repos = get_url(repos_url)
         
+        updated_repos = []
         for repo in repos:
-            pushed = datetime.strptime(i['pushed_at'], '%Y-%m-%dT%H:%M:%SZ')
-            if pushed > since:
-                pass
+            pushed = datetime.strptime(repo['pushed_at'], '%Y-%m-%dT%H:%M:%SZ')
+            if pushed.date() > since:
+                updated_repos.append(repo)
+                
+        return updated_repos
     
     def _convert_feed(self, feed, since):
         """Take the user's atom feed.
@@ -131,6 +136,7 @@ class ServiceHandler(OAuthServiceHandler):
         commit_times = {}
         
         days_committed = generate_days_dict()
+        username = self._get_username()
         
         for entry in feed:
             if entry['public']:
@@ -185,9 +191,6 @@ class ServiceHandler(OAuthServiceHandler):
         max_commits_on_a_day = max_commits_on_a_day[max_commits_on_a_day.keyOrder[0]] + 1
 
         return items, avatar, commit_times, self._most_common_commit_time(commit_times), days_committed, max_commits_on_a_day
-
-    def _create_service_item(self, entry):
-        """Create a service item from github's format"""
     
     def _most_common_commit_time(self, commits):
         """Take a list of commit times and return the most common time
@@ -244,9 +247,10 @@ class ServiceHandler(OAuthServiceHandler):
         except:
             item.title = "Unknown Event!"
             
-    def _get_user_info(self):
+    def _get_username(self):
         """Get a user's profile data"""
         
         user_json = get_url('https://api.github.com/user?access_token=%s' % (self.service.auth.access_token.oauth_token))
         
-        return user_json
+        if user_json.has_key('login'):
+            return user_json['login']
