@@ -37,6 +37,19 @@
                 {% endfor %}
             </ul>
             {% endif %}
+            {%  if repos %}
+            <h3>Your Repos:</h3>
+            {% for repo in repos %}
+                <h4>{{repo.name}} <img width="20" height="20" src="{{repo.owner.avatar_url}}"/></h4>
+                <ul>
+                <li>Owner: {{repo.owner.login}}</li>
+                <li>Language: {{repo.language}}</li>
+                <li>Watchers: {{repo.watchers}}</li>
+                <li>Open Issues: <a href="{{repo.html_url}}/issues/">{{repo.open_issues}}</a></li>
+                <li>Forks: {{repo.forks}}</li>
+                </ul>
+            {% endfor %}
+            {% endif %}
             <div class="clearfix"></div> 
             <div id="right"></div> <! --#right --> 
         </div> <!-- #centre --> 

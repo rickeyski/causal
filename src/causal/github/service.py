@@ -23,6 +23,19 @@ class ServiceHandler(OAuthServiceHandler):
             since
         )
 
+    def get_stats_items(self, since):
+        """Fetch stats updates.
+        """
+
+        feed = self._get_feed()
+        repos = self._get_repos(since)
+        
+        if not feed and not repo:
+            return
+        
+        return self._convert_stats_feed(feed, since), repos
+    
+    
     def _get_feed(self):
         """Get the user's latest updates from github's json feed"""
         
@@ -38,17 +51,6 @@ class ServiceHandler(OAuthServiceHandler):
             )
             
         return feed
-
-    def get_stats_items(self, since):
-        """Fetch stats updates.
-        """
-
-        feed = self._get_feed()
-        repos = self._get_repos(since)
-        
-        if not feed:
-            return
-        return self._convert_stats_feed(feed, since)
 
     def _get_repos(self, since):
         """Fetch the repo list for a user."""
@@ -119,10 +121,8 @@ class ServiceHandler(OAuthServiceHandler):
 
             time_offset = timedelta(hours=int(offset[:2]))
 
-            converted_date = datetime.strptime(date + ' ' + time, '%Y-%m-%d %H:%M:%S') + time_offset
+            return datetime.strptime(date + ' ' + time, '%Y-%m-%d %H:%M:%S') + time_offset
 
-        return converted_date    
-        
     def _convert_stats_feed(self, feed, since):
         """Take the user's atom feed.
         """
@@ -150,8 +150,15 @@ class ServiceHandler(OAuthServiceHandler):
                         
                         # fetch and get the stats on commits
                         for commit in entry['payload']['shas']:
-                            url = "https://api.github.com/repos/%s/%s/git/commits/%s" % (self.service.auth.username, entry['repository']['name'], commit[0])
+                            
+                            url = "https://api.github.com/repos/%s/%s/git/commits/%s?access_token=%s" % (
+                                entry['repository']['owner'],
+                                entry['repository']['name'], 
+                                commit[0], 
+                                self.service.auth.access_token.oauth_token)
                             commit_detail = get_data(self.service, url, disable_oauth=True)
+                            #if commit_detail.has_key('message') and commit_detail['message'] == 'Not Found':
+                            #    break
                             item = ServiceItem()
                             item.title = "Commit for %s" % (entry['repository']['name'])
                             item.body = '"%s"' % (commit_detail['message']) 
