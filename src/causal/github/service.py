@@ -245,7 +245,12 @@ class ServiceHandler(OAuthServiceHandler):
             elif entry['type'] == 'GollumEvent':
                 pass
             elif entry['type'] == 'IssueCommentEvent':
-                item.title = "Commented on issue with id of %s" % (entry['payload']['issue_id'])
+                comments = get_url('https://api.github.com/repos/%s/%s/issues/comments/%s' % (
+                    entry['repository']['owner'], 
+                    entry['repository']['name'],
+                    entry['payload']['comment_id']
+                ))
+                item.title = 'Commented <b>"%s"</b> on issue <a href="%s">%s</a>' % (comments['body'], entry['url'], entry['url'].split('#')[0].rsplit('/', 1)[1])
             elif entry['type'] == 'PullRequestEvent':
                 item.title = "Created pull for %s" % (entry['repository']['name'])
             else:
