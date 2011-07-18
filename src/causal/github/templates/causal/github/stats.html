@@ -47,12 +47,12 @@
             {%  if repos %}
             <h3>Repos Used:</h3>
             {% for name, repo in repos.items %}
-                <h4>{{repo.name}} <img width="20" height="20" src="{{repo.owner.avatar_url}}"/></h4>
+                <h4><a href="https://github.com/{{repo.owner.login}}/{{repo.name}}">{{repo.name}}</a> <img width="20" height="20" src="{{repo.owner.avatar_url}}"/></h4>
                 <ul>
                 <li>Owner: {{repo.owner.login}}</li>
                 <li>Language: {{repo.language}}</li>
                 <li>Watchers: {{repo.watchers}}</li>
-                <li>Open Issues: <a href="{{repo.html_url}}/issues/">{{repo.open_issues}}</a></li>
+                {% if repo.has_issues %}<li>Open Issues: <a href="{{repo.html_url}}/issues/">{{repo.open_issues}}</a></li>{% endif%}
                 <li>Forks: {{repo.forks}}</li>
                 </ul>
             {% endfor %}
