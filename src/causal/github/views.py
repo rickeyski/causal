@@ -95,17 +95,18 @@ def stats(request, service_id):
     service = get_object_or_404(UserService, pk=service_id)
 
     if check_is_service_id(service, PACKAGE):
-        commits, repos = service.handler.get_stats_items(date.today() - timedelta(days=7))
+        stats = service.handler.get_stats_items(date.today() - timedelta(days=7))
         return render(
             request,
             {
-                'commits': commits[0],
-                'avatar' : commits[1],
-                'commit_times' : commits[2],
-                'common_time' : commits[3],
-                'days_committed' : commits[4], 
-                'max_commits_on_a_day' : commits[5],
-                'repos' : repos
+                'events' : stats['events'],
+                'commits': stats['commits'],
+                'avatar' : stats['avatar'],
+                'commit_times' : stats['commit_times'],
+                'common_time' : stats['most_common_commit_time'],
+                'days_committed' : stats['days_committed'], 
+                'max_commits_on_a_day' : stats['max_commits_on_a_day'],
+                'repos' : stats['repos']
             },
             'causal/github/stats.html'
         )

@@ -28,13 +28,12 @@ class ServiceHandler(OAuthServiceHandler):
         """
 
         feed = self._get_feed()
-        repos = self._get_repos(since)
+        #repos = self._get_repos(since)
         
-        if not feed and not repo:
+        if not feed:
             return
         
-        return self._convert_stats_feed(feed, since), repos
-    
+        return self._convert_stats_feed(feed, since)
     
     def _get_feed(self):
         """Get the user's latest updates from github's json feed"""
@@ -128,22 +127,31 @@ class ServiceHandler(OAuthServiceHandler):
         """
 
         items = []
+        commits = []
         avatar = ""
 
         if feed and feed[0]['actor_attributes'].has_key('gravatar_id'):
             avatar = 'http://www.gravatar.com/avatar/%s' % (feed[0]['actor_attributes']['gravatar_id'],)
 
-        commit_times = {}
-        
+        commit_times = {}        
         days_committed = generate_days_dict()
         username = self._get_username()
-        
+        repos = []
         for entry in feed:
             if entry['public']:
                 dated, time, offset = entry['created_at'].rsplit(' ')
                 created = self._convert_date(entry)
 
                 if created.date() >= since:
+                    if entry.has_key('repository') \
+                       and entry['repository'].has_key('name') \
+                       and entry['repository'].has_key('owner'):
+                        url = "https://api.github.com/repos/%s/%s?access_token=%s" % (
+                            entry['repository']['owner'],
+                            entry['repository']['name'],
+                            self.service.auth.access_token.oauth_token)
+                        repo = get_data(self.service, url, disable_oauth=True)
+                        repos.append(repo)
 
                     # extract commits from push event
                     if entry['type'] == 'PushEvent':
@@ -168,7 +176,7 @@ class ServiceHandler(OAuthServiceHandler):
                                 item.link_back = commit_detail['url']
 
                             item.service = self.service
-                            items.append(item)
+                            commits.append(item)
                             
                             if days_committed.has_key(item.created.date()):
                                 days_committed[item.created.date()] = days_committed[item.created.date()] + 1
@@ -197,7 +205,14 @@ class ServiceHandler(OAuthServiceHandler):
         max_commits_on_a_day = SortedDict(sorted(days_committed.items(), reverse=True, key=lambda x: x[1]))
         max_commits_on_a_day = max_commits_on_a_day[max_commits_on_a_day.keyOrder[0]] + 1
 
-        return items, avatar, commit_times, self._most_common_commit_time(commit_times), days_committed, max_commits_on_a_day
+        return { 'events' : items,
+                    'commits' : commits, 
+                    'avatar' : avatar, 
+                    'commit_times' : commit_times,
+                    'most_common_commit_time' : self._most_common_commit_time(commit_times), 
+                    'days_committed' : days_committed, 
+                    'max_commits_on_a_day' : max_commits_on_a_day, 
+                    'repos' : repos}
     
     def _most_common_commit_time(self, commits):
         """Take a list of commit times and return the most common time
@@ -227,7 +242,11 @@ class ServiceHandler(OAuthServiceHandler):
             elif entry['type'] == 'GistEvent':
                 item.title = "Created gist %s" % (entry['payload']['desc'])
             elif entry['type'] == 'IssuesEvent':
-                item.title = "Issue #%s was %s." % (str(entry['payload']['number']), entry['payload']['action'])
+                url = 'https://github.com/%s/%s/issues/%s' % (
+                    entry['repository']['owner'], 
+                    entry['repository']['name'],
+                    str(entry['payload']['number']))
+                item.title = 'Issue <a href="%s">#%s</a> was %s.' % (url, str(entry['payload']['number']), entry['payload']['action'])
             elif entry['type'] == 'ForkEvent':
                 item.title = "Repo %s forked." % (entry['repository']['name'])
             elif entry['type'] == 'PushEvent':
