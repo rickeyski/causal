@@ -1,4 +1,4 @@
-import httplib2
+import httplib2, httplib
 import oauth2 as oauth
 from datetime import datetime, timedelta, date
 from django.shortcuts import redirect

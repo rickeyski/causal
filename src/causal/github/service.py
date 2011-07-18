@@ -3,15 +3,15 @@ import feedparser
 from dateutil import parser
 from datetime import datetime, timedelta, date
 from BeautifulSoup import Tag, SoupStrainer, BeautifulSoup as soup
-from causal.main.handlers import BaseServiceHandler
-from causal.main.models import ServiceItem
-from causal.main.utils.services import get_data, generate_days_dict
+from causal.main.handlers import OAuthServiceHandler
+from causal.main.models import OAuth, RequestToken, AccessToken, UserService, ServiceItem
+from causal.main.utils.services import get_model_instance, get_data, get_url, generate_days_dict
 from causal.main.exceptions import LoggedServiceError
 from django.utils.datastructures import SortedDict
 
 KEEP_TAGS = ('a', 'span', 'code',)
 
-class ServiceHandler(BaseServiceHandler):
+class ServiceHandler(OAuthServiceHandler):
     display_name = 'Github'
 
     def get_items(self, since):
@@ -23,23 +23,48 @@ class ServiceHandler(BaseServiceHandler):
             since
         )
 
-    def _get_feed(self):
-        feed = get_data(
-            self.service,
-            'https://github.com/%s.json' % (self.service.auth.username,),
-            disable_oauth=True
-        )
-        return feed
-
     def get_stats_items(self, since):
         """Fetch stats updates.
         """
 
         feed = self._get_feed()
+        #repos = self._get_repos(since)
+        
         if not feed:
             return
+        
         return self._convert_stats_feed(feed, since)
+    
+    def _get_feed(self):
+        """Get the user's latest updates from github's json feed"""
+        
+        feed = None
+        username = self._get_username()
 
+        # check we have the username to access the json feed from github
+        if username:
+            feed = get_data(
+                self.service,
+                'https://github.com/%s.json' % (username),
+                disable_oauth=True
+            )
+            
+        return feed
+
+    def _get_repos(self, since):
+        """Fetch the repo list for a user."""
+        
+        repos_url = "https://api.github.com/user/repos?access_token=%s" % (self.service.auth.access_token.oauth_token)
+        repos = get_url(repos_url)
+        
+        updated_repos = []
+        for repo in repos:
+            pushed = datetime.strptime(repo['pushed_at'], '%Y-%m-%dT%H:%M:%SZ')
+            if pushed.date() > since:
+                updated_repos.append(repo)
+                
+        return updated_repos
+    
     def _convert_feed(self, feed, since):
         """Take the user's atom feed.
         """
@@ -95,38 +120,54 @@ class ServiceHandler(BaseServiceHandler):
 
             time_offset = timedelta(hours=int(offset[:2]))
 
-            converted_date = datetime.strptime(date + ' ' + time, '%Y-%m-%d %H:%M:%S') + time_offset
+            return datetime.strptime(date + ' ' + time, '%Y-%m-%d %H:%M:%S') + time_offset
 
-        return converted_date    
-        
     def _convert_stats_feed(self, feed, since):
         """Take the user's atom feed.
         """
 
         items = []
+        commits = []
         avatar = ""
 
         if feed and feed[0]['actor_attributes'].has_key('gravatar_id'):
             avatar = 'http://www.gravatar.com/avatar/%s' % (feed[0]['actor_attributes']['gravatar_id'],)
 
-        commit_times = {}
-        
+        commit_times = {}        
         days_committed = generate_days_dict()
-        
+        username = self._get_username()
+        repos = {}
         for entry in feed:
             if entry['public']:
                 dated, time, offset = entry['created_at'].rsplit(' ')
                 created = self._convert_date(entry)
 
                 if created.date() >= since:
-
+                    if entry.has_key('repository') \
+                       and entry['repository'].has_key('name') \
+                       and entry['repository'].has_key('owner'):
+                        url = "https://api.github.com/repos/%s/%s?access_token=%s" % (
+                            entry['repository']['owner'],
+                            entry['repository']['name'],
+                            self.service.auth.access_token.oauth_token)
+                        repo = get_data(self.service, url, disable_oauth=True)
+                                        
+                        repos[entry['repository']['owner'] + entry['repository']['name']] = repo
+                        
                     # extract commits from push event
                     if entry['type'] == 'PushEvent':
                         
                         # fetch and get the stats on commits
                         for commit in entry['payload']['shas']:
-                            url = "https://api.github.com/repos/%s/%s/git/commits/%s" % (self.service.auth.username, entry['repository']['name'], commit[0])
+                            
+                            url = "https://api.github.com/repos/%s/%s/git/commits/%s?access_token=%s" % (
+                                entry['repository']['owner'],
+                                entry['repository']['name'], 
+                                commit[0], 
+                                self.service.auth.access_token.oauth_token)
                             commit_detail = get_data(self.service, url, disable_oauth=True)
+                            #if commit_detail.has_key('message') and commit_detail['message'] == 'Not Found':
+                            #    break
                             item = ServiceItem()
                             item.title = "Commit for %s" % (entry['repository']['name'])
                             item.body = '"%s"' % (commit_detail['message']) 
@@ -136,7 +177,7 @@ class ServiceHandler(BaseServiceHandler):
                                 item.link_back = commit_detail['url']
 
                             item.service = self.service
-                            items.append(item)
+                            commits.append(item)
                             
                             if days_committed.has_key(item.created.date()):
                                 days_committed[item.created.date()] = days_committed[item.created.date()] + 1
@@ -165,10 +206,14 @@ class ServiceHandler(BaseServiceHandler):
         max_commits_on_a_day = SortedDict(sorted(days_committed.items(), reverse=True, key=lambda x: x[1]))
         max_commits_on_a_day = max_commits_on_a_day[max_commits_on_a_day.keyOrder[0]] + 1
 
-        return items, avatar, commit_times, self._most_common_commit_time(commit_times), days_committed, max_commits_on_a_day
-
-    def _create_service_item(self, entry):
-        """Create a service item from github's format"""
+        return { 'events' : items,
+                    'commits' : commits, 
+                    'avatar' : avatar, 
+                    'commit_times' : commit_times,
+                    'most_common_commit_time' : self._most_common_commit_time(commit_times), 
+                    'days_committed' : days_committed, 
+                    'max_commits_on_a_day' : max_commits_on_a_day, 
+                    'repos' : repos}
     
     def _most_common_commit_time(self, commits):
         """Take a list of commit times and return the most common time
@@ -198,7 +243,11 @@ class ServiceHandler(BaseServiceHandler):
             elif entry['type'] == 'GistEvent':
                 item.title = "Created gist %s" % (entry['payload']['desc'])
             elif entry['type'] == 'IssuesEvent':
-                item.title = "Issue #%s was %s." % (str(entry['payload']['number']), entry['payload']['action'])
+                url = 'https://github.com/%s/%s/issues/%s' % (
+                    entry['repository']['owner'], 
+                    entry['repository']['name'],
+                    str(entry['payload']['number']))
+                item.title = 'Issue <a href="%s">#%s</a> was %s.' % (url, str(entry['payload']['number']), entry['payload']['action'])
             elif entry['type'] == 'ForkEvent':
                 item.title = "Repo %s forked." % (entry['repository']['name'])
             elif entry['type'] == 'PushEvent':
@@ -216,7 +265,12 @@ class ServiceHandler(BaseServiceHandler):
             elif entry['type'] == 'GollumEvent':
                 pass
             elif entry['type'] == 'IssueCommentEvent':
-                item.title = "Commented on issue with id of %s" % (entry['payload']['issue_id'])
+                comments = get_url('https://api.github.com/repos/%s/%s/issues/comments/%s' % (
+                    entry['repository']['owner'], 
+                    entry['repository']['name'],
+                    entry['payload']['comment_id']
+                ))
+                item.title = 'Commented <b>"%s"</b> on issue <a href="%s">%s</a>' % (comments['body'], entry['url'], entry['url'].split('#')[0].rsplit('/', 1)[1])
             elif entry['type'] == 'PullRequestEvent':
                 item.title = "Created pull for %s" % (entry['repository']['name'])
             else:
@@ -224,3 +278,11 @@ class ServiceHandler(BaseServiceHandler):
                 
         except:
             item.title = "Unknown Event!"
+            
+    def _get_username(self):
+        """Get a user's profile data"""
+        
+        user_json = get_url('https://api.github.com/user?access_token=%s' % (self.service.auth.access_token.oauth_token))
+        
+        if user_json.has_key('login'):
+            return user_json['login']

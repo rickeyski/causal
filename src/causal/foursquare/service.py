@@ -22,7 +22,7 @@ class ServiceHandler(OAuthServiceHandler):
             checkins = get_url(url)
         except Exception, e:
             messages.error(request, "Unable to to contact Foursquare's servers, please wait a few minutes and retry or check http://status.foursquare.com.")
-            raise LoggedServiceError(original_exception=e)
+            return LoggedServiceError(original_exception=e)
 
         return self._convert_feed(checkins, since)
 
@@ -32,8 +32,34 @@ class ServiceHandler(OAuthServiceHandler):
         checkins = self.get_items(since)
 
         categories = {}
-        
+        badge_images = {}
         mayorships = {}
+        
+        user_details_url = "https://api.foursquare.com/v2/users/self?oauth_token=%s" % (self.service.auth.access_token.oauth_token)
+        user_details = get_url(user_details_url)
+
+        avatar = user_details['response']['user']['photo']
+        twitter_id = ''
+        if user_details['response']['user']['contact'].has_key('twitter') \
+           and user_details['response']['user']['contact']['twitter']:
+            twitter_id = user_details['response']['user']['contact']['twitter']
+        try:
+            url = "https://api.foursquare.com/v2/users/self/badges?oauth_token=%s" % (self.service.auth.access_token.oauth_token)
+            badges = get_url(url)
+            for k,v in badges['response']['badges'].iteritems():
+            
+                if v.has_key('unlocks') and v['unlocks']:
+                    if twitter_id:
+                        badge_url = 'https://foursquare.com/user/%s/badges' % (user_details['response']['user']['id'])
+                    else:
+                        badge_url = 'https://foursquare.com/%s/badge/%s' % (twitter_id,k)
+                    badge_images[v['name']] = {
+                        'image' : v['image']['prefix'] + str(v['image']['sizes'][0]) + v['image']['name'],
+                        'url' : badge_url
+                    }
+        except Exception, e:
+            messages.error(request, "Unable to to contact Foursquare's servers, please wait a few minutes and retry or check http://status.foursquare.com.")
+            return LoggedServiceError(original_exception=e)
         
         for checkin in checkins:
 
@@ -60,7 +86,7 @@ class ServiceHandler(OAuthServiceHandler):
                     
         categories = SortedDict(sorted(categories.items(), reverse=True, key=lambda x: x[1]))
                     
-        return checkins, categories, mayorships
+        return checkins, categories, mayorships, badge_images
     
     def _convert_feed(self, json, since):
         """Take the raw json from the feed and convert it to ServiceItems.

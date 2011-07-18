@@ -65,13 +65,23 @@ SERVICE_CONFIG = {
    'causal.flickr': {
        'auth': {
            'api_key': 'asdfghjkl1234567890'
+           'api_secret' : 'asdfghjkl1234567890',
+           'request_url' : 'http://www.flickr.com/services/oauth/request_token',
+           'authorization_url' : 'http://www.flickr.com/services/oauth/authorize',
+           'access_token_url' : 'http://www.flickr.com/services/oauth/access_token',
        }
    },
    'causal.lastfm': {
        'auth': {
            'api_key': 'asdfghjkl1234567890'
        }
-   }
+   },
+   'causal.github': {
+      'auth': {
+          'consumer_key': 'asdfghjkl1234567890',
+          'consumer_secret': 'asdfghjkl1234567890'
+      }
+  },
 }
 
 # *Don't* use the below example, generate your own random string of chars
