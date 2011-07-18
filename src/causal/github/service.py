@@ -136,7 +136,7 @@ class ServiceHandler(OAuthServiceHandler):
         commit_times = {}        
         days_committed = generate_days_dict()
         username = self._get_username()
-        repos = []
+        repos = {}
         for entry in feed:
             if entry['public']:
                 dated, time, offset = entry['created_at'].rsplit(' ')
@@ -151,8 +151,9 @@ class ServiceHandler(OAuthServiceHandler):
                             entry['repository']['name'],
                             self.service.auth.access_token.oauth_token)
                         repo = get_data(self.service, url, disable_oauth=True)
-                        repos.append(repo)
-
+                                        
+                        repos[entry['repository']['owner'] + entry['repository']['name']] = repo
+                        
                     # extract commits from push event
                     if entry['type'] == 'PushEvent':
                         

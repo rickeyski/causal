@@ -45,8 +45,8 @@
             </ul>
             {% endif %}
             {%  if repos %}
-            <h3>Your Repos:</h3>
-            {% for repo in repos %}
+            <h3>Repos Used:</h3>
+            {% for name, repo in repos.items %}
                 <h4>{{repo.name}} <img width="20" height="20" src="{{repo.owner.avatar_url}}"/></h4>
                 <ul>
                 <li>Owner: {{repo.owner.login}}</li>
